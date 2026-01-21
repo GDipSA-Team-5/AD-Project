@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: AD-Project-App
+  AZURE_WEBAPP_NAME: ADWebApplication
   DOTNET_VERSION: '10.0.x'
-  PROJECT_PATH: './AD-Project/AD-Project.csproj'
+  PROJECT_PATH: './ADWebApplication/ADWebApplication.csproj'
 
 jobs:
   build-and-deploy:
