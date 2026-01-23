@@ -66,5 +66,7 @@ jobs:
       # Step 9: Quality Gate enforcement
       - name: SonarCloud Quality Gate
         uses: SonarSource/sonarqube-quality-gate-action@v1
+        with:
+          scanMetadataReportFile: ADWebApplication/.sonarqube/out/.sonar/report-task.txt
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
