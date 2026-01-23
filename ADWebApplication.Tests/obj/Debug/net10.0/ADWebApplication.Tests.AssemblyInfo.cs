@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ADWebApplication.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a5a526d080deddd34ff9376f80ea0f8a0271d975")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d77852f89deb9b7f1123c8ac8cf041bd9fc0b739")]
 [assembly: System.Reflection.AssemblyProductAttribute("ADWebApplication.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ADWebApplication.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

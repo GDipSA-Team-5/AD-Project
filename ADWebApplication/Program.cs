@@ -26,4 +26,8 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 
-await app.RunAsync();
+// Only call RunAsync when executing normally
+if (args.Contains("run"))
+{
+    await app.RunAsync();
+}

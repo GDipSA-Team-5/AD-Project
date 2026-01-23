@@ -1,15 +1,14 @@
 ﻿namespace ADWebApplication.Tests;
 
-using Xunit;
-using ADWebApplication.Services;
+using ADWebApplication.Services; 
 
 public class CalculatorTests
 {
     [Fact]
-    public void Add_TwoNumbers_ReturnsCorrectSum()
+    public void Add_ReturnsCorrectSum()
     {
         var calc = new Calculator();
-        int result = calc.Add(2, 3);
+        var result = calc.Add(2, 3);
         Assert.Equal(5, result);
     }
 }
