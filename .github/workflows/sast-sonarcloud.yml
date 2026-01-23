@@ -90,6 +90,7 @@ jobs:
           path: .
           format: ALL
           out: ./dependency-check-report
+          args: --exclude "./ADWebApplication.Tests/bin"
         continue-on-error: true   # ensure report is generated even if vulnerabilities exist
 
       # Step 11: Upload Dependency-Check report
