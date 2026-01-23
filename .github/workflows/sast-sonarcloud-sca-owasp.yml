@@ -102,18 +102,16 @@ jobs:
           name: dependency-check-report
           path: ./dependency-check-report
 
-      # Step 12: Fail workflow if CVSS >= 7
+      # Step 12: Fail workflow if high CVSS vulnerabilities found
       - name: Fail workflow if high CVSS vulnerabilities found
         run: |
           REPORT_FILE=./dependency-check-report/dependency-check-report.xml
 
-          # Exit if the report file doesn't exist
           if [ ! -f "$REPORT_FILE" ]; then
-            echo "Dependency-Check report not found. Skipping CVSS check."
+            echo "Dependency-Check report not found. Continuing workflow."
             exit 0
           fi
 
-          # Count vulnerabilities with CVSSv3 base score >= 7
           HIGH_COUNT=$(xmllint --xpath "count(//vulnerability[number(cvssv3BaseScore) >= 7])" "$REPORT_FILE")
           
           if [ "$HIGH_COUNT" -gt 0 ]; then
@@ -121,4 +119,5 @@ jobs:
             exit 1
           else
             echo "No high CVSS vulnerabilities found. Workflow passes."
+            exit 0  # <-- ensure workflow ends as success
           fi
