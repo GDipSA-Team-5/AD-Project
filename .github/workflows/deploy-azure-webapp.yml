@@ -1,9 +1,10 @@
 name: Build and deploy AD Project to Azure Web App
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: [ "CI with SonarCloud" ]
+    types:
+      - completed
   workflow_dispatch:
 
 env:
@@ -13,6 +14,7 @@ env:
 
 jobs:
   build-and-deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: windows-latest
 
     steps:
