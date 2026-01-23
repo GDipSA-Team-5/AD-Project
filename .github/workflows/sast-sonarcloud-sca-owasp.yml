@@ -101,7 +101,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dependency-check-report
-          path: ./dependency-check-report
+          path: ADWebApplication/dependency-check-report
 
       # Step 12: Fail workflow if high CVSS vulnerabilities found
       - name: Fail workflow if high CVSS vulnerabilities found
