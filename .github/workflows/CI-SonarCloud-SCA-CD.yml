@@ -1,4 +1,4 @@
-name: CI + SCA + Deploy
+name: CI + SonarCloud + SCA + Deploy
 
 on:
   push:
@@ -12,9 +12,9 @@ env:
   PROJECT_PATH: './ADWebApplication/ADWebApplication.csproj'
 
 jobs:
-  # ----------------------------
-  # JOB 1: CI + SonarCloud + SCA
-  # ----------------------------
+  # =========================================================
+  # JOB 1: CI + SONARCLOUD + OWASP DEPENDENCY-CHECK
+  # =========================================================
   build-and-scan:
     runs-on: ubuntu-latest
 
@@ -23,16 +23,19 @@ jobs:
         working-directory: ADWebApplication
 
     steps:
+      # ---- Checkout ----
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # ---- .NET Setup ----
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      # ---- Sonar Scanner ----
       - name: Install SonarScanner
         run: dotnet tool install --global dotnet-sonarscanner
 
@@ -47,13 +50,14 @@ jobs:
           /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml"
           /d:sonar.coverage.exclusions="**/Program.cs"
 
+      # ---- Build & Test ----
       - name: Restore
         run: dotnet restore
 
       - name: Build
         run: dotnet build --no-restore
 
-      - name: Test
+      - name: Test with Coverage
         run: >
           dotnet test
           --no-build
@@ -66,6 +70,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: dotnet sonarscanner end
 
+      # ---- Sonar Quality Gate ----
       - name: SonarCloud Quality Gate
         uses: SonarSource/sonarqube-quality-gate-action@v1
         with:
@@ -73,12 +78,24 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
+      # ---- Upload Sonar Artifacts (GitHubActions UI) ----
+      - name: Upload SonarCloud artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonarcloud-artifacts
+          if-no-files-found: error
+          path: |
+            ADWebApplication/.sonarqube
+            ADWebApplication/coverage.opencover.xml
+
+      # ---- OWASP Dependency-Check ----
       - name: Run OWASP Dependency-Check SCA
         uses: dependency-check/Dependency-Check_Action@main
         with:
           project: ADWebApplication
           path: .
-          format: 'ALL'
+          format: ALL
           out: ./dependency-check-report
           args: >
             --failOnCVSS 7
@@ -91,14 +108,13 @@ jobs:
           name: dependency-check-report
           path: ./dependency-check-report
 
-  # ----------------------------
-  # JOB 2: BUILD & DEPLOY
-  # ----------------------------
+  # =========================================================
+  # JOB 2: BUILD & DEPLOY TO AZURE
+  # =========================================================
   deploy:
     needs: build-and-scan
     runs-on: windows-latest
 
-    # Deploy ONLY on push to main AND if CI succeeded
     if: |
       github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&
@@ -113,7 +129,7 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Restore dependencies
+      - name: Restore
         run: dotnet restore ${{ env.PROJECT_PATH }}
 
       - name: Build
