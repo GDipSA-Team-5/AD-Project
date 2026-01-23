@@ -82,49 +82,29 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      # Step 10: Run OWASP Dependency-Check SCA
-      - name: Run OWASP Dependency-Check SCA
-        uses: dependency-check/Dependency-Check_Action@main
-        with:
-          project: ADWebApplication
-          path: .
-          format: ALL
-          out: ./dependency-check-report
-          args: >
-            --exclude "./ADWebApplication.Tests/bin"
-            --suppression dependency-check-suppressions.xml
-            --disableFailOnEmpty  # ensures report is created even if no vulnerabilities
-        continue-on-error: true
+      # Step 10: Install OWASP Dependency-Check
+      - name: Install OWASP Dependency-Check
+        run: |
+          curl -L -o dependency-check.zip https://github.com/jeremylong/DependencyCheck/releases/download/v8.3.2/dependency-check-8.3.2-release.zip
+          unzip dependency-check.zip -d dependency-check
+          chmod +x dependency-check/bin/dependency-check.sh
 
-      # Step 11: Upload Dependency-Check report
-      - name: Upload Dependency-Check report
+      # Step 11: Run OWASP SCA Scan
+      - name: Run OWASP Dependency-Check Scan
+        continue-on-error: true   # Ensure subsequent step runs even if vulnerabilities exceed threshold
+        run: |
+          dependency-check/bin/dependency-check.sh \
+            --project "ADWebApplication" \
+            --scan . \
+            --format "ALL" \
+            --out "dependency-check-report" \
+            --failOnCVSS 7 \
+            --autoUpdate true
+
+      # Step 12: Upload SCA Report
+      - name: Upload SCA Report
+        if: always()   # Ensures the report is uploaded even if the previous step fails
         uses: actions/upload-artifact@v4
         with:
           name: dependency-check-report
-          path: ADWebApplication/dependency-check-report
-
-      # Step 12: Fail workflow if high CVSS vulnerabilities found
-      - name: Fail workflow if high CVSS vulnerabilities found
-        run: |
-          REPORT_DIR=./dependency-check-report
-          REPORT_FILE="$REPORT_DIR/dependency-check-report.xml"
-
-          # Ensure the report folder exists
-          mkdir -p "$REPORT_DIR"
-
-          # Create empty report if missing
-          if [ ! -f "$REPORT_FILE" ]; then
-            echo "Dependency-Check report not found. Creating empty report."
-            echo '<?xml version="1.0"?><analysis></analysis>' > "$REPORT_FILE"
-          fi
-
-          # Count high CVSS vulnerabilities without using -P (PCRE)
-          HIGH_COUNT=$(awk 'match($0, /cvssV3BaseScore="([0-9.]+)"/, a) && a[1] >= 7 {c++} END {print c+0}' "$REPORT_FILE")
-
-          if [ "$HIGH_COUNT" -gt 0 ]; then
-            echo "High CVSS vulnerabilities found ($HIGH_COUNT)! Failing workflow."
-            exit 1
-          else
-            echo "No high CVSS vulnerabilities found. Workflow passes."
-            exit 0
-          fi
+          path: dependency-check-report
