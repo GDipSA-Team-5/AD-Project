@@ -84,7 +84,7 @@ jobs:
 
       # Step 10: OWASP Dependency-Check SCA
       - name: Run OWASP Dependency-Check SCA
-        uses: dependency-check/Dependency-Check_Action@v1.1.0
+        uses: dependency-check/Dependency-Check_Action@main
         with:
           project: ADWebApplication
           path: .
