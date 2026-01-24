@@ -18,10 +18,6 @@ jobs:
   build-and-scan:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: ADWebApplication
-
     steps:
       # ---- Checkout ----
       - name: Checkout code
@@ -42,39 +38,38 @@ jobs:
       - name: SonarCloud Begin
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: >
-          dotnet sonarscanner begin
-          /k:"GDipSA-Team-5_AD-Project"
-          /o:"gdipsa-team-5"
-          /d:sonar.host.url="https://sonarcloud.io"
-          /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml"
-          /d:sonar.coverage.exclusions="**/Program.cs"
+        run: |
+          dotnet sonarscanner begin \
+            /k:"GDipSA-Team-5_AD-Project" \
+            /o:"gdipsa-team-5" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.cs.opencover.reportsPaths="coverage/coverage.opencover.xml" \
+            /d:sonar.coverage.exclusions="**/Program.cs"
 
       # ---- Build & Test ----
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore ${{ env.PROJECT_PATH }}
 
       - name: Build
-        run: dotnet build --no-restore
+        run: dotnet build ${{ env.PROJECT_PATH }} --no-restore
 
       - name: Test with Coverage
-        run: >
-          dotnet test
-          --no-build
-          /p:CollectCoverage=true
-          /p:CoverletOutputFormat=opencover
-          /p:CoverletOutput=./coverage.opencover.xml
+        run: |
+          mkdir -p coverage
+          dotnet test ./ADWebApplication.Tests/ADWebApplication.Tests.csproj \
+            --no-build \
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=opencover \
+            /p:CoverletOutput=./coverage/coverage.opencover.xml
 
       - name: Debug – list all files
         run: |
           pwd
           ls -la
-
-      - name: Find coverage file
-        run: find . -name "*opencover*.xml"
+          find . -name "*opencover*.xml"
 
       - name: Check if coverage file exists
-        run: test -f coverage.opencover.xml && echo "Coverage file found" || exit 1
+        run: test -f coverage/coverage.opencover.xml && echo "Coverage file found" || exit 1
 
       - name: SonarCloud End
         env:
@@ -85,18 +80,18 @@ jobs:
       - name: SonarCloud Quality Gate
         uses: SonarSource/sonarqube-quality-gate-action@v1
         with:
-          scanMetadataReportFile: ADWebApplication/.sonarqube/out/.sonar/report-task.txt
+          scanMetadataReportFile: .sonarqube/out/.sonar/report-task.txt
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      # ---- Upload Sonar Artifacts (GitHubActions UI) ----
+      # ---- Upload Sonar Artifacts ----
       - name: Upload SonarCloud artifacts
         uses: actions/upload-artifact@v4
         with:
           name: sonarcloud-artifacts
           path: |
-            ADWebApplication/.sonarqube/out
-            ADWebApplication/coverage.opencover.xml
+            .sonarqube/out
+            coverage/coverage.opencover.xml
 
       # ---- OWASP Dependency-Check ----
       - name: Run OWASP Dependency-Check SCA
@@ -124,7 +119,6 @@ jobs:
   deploy:
     needs: build-and-scan
     runs-on: windows-latest
-
     if: |
       github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&
@@ -154,32 +148,3 @@ jobs:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: publish
-
-  # =========================================================
-  # JOB 3: OWASP ZAP SECURITY SCAN
-  # =========================================================
-  zap-scan:
-    needs: deploy
-    runs-on: ubuntu-latest
-    if: |
-      needs.deploy.result == 'success'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v2
-
-      - name: Run OWASP ZAP Security Scan
-        uses: zaproxy/action-full-scan@v1.0.0
-        with:
-          target: 'https://in5nite-e8d9b0g5cad9hrbg.southeastasia-01.azurewebsites.net/'  # Replace with your Azure deployed app URL
-          docker-image: 'owasp/zap2docker-stable'  # Using the stable OWASP ZAP Docker image
-          start-options: '-config api.disablekey=true'  # Disable API key if needed
-
-      - name: Upload ZAP Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: zap-report
-          path: /zap/wrk/*.html  # Path to ZAP HTML report file (can be adjusted based on your ZAP config)
