@@ -118,6 +118,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ---- Checkout code ----
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -125,12 +126,18 @@ jobs:
       - name: Publish App
         run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --output publish
 
-      # ---- Start app locally in background ----
+      # ---- Start app locally in the background ----
       - name: Run App Locally
         run: |
-          dotnet publish/ADWebApplication.dll &
+          nohup dotnet publish/ADWebApplication.dll &  # Start the app in the background
           echo "Waiting for app to start..."
-          sleep 10
+          
+          # Check if the app is running on http://localhost:5000 before proceeding
+          until curl -s http://localhost:5000 > /dev/null; do
+            echo "Waiting for app to start..."
+            sleep 2  # Check every 2 seconds
+          done
+          echo "App is running!"
 
       # ---- Run ZAP Baseline Scan ----
       - name: Run OWASP ZAP Baseline Scan
@@ -141,6 +148,7 @@ jobs:
           format: 'html'
           output: zap_report.html
 
+      # ---- Upload ZAP report ----
       - name: Upload ZAP report
         uses: actions/upload-artifact@v4
         with:
