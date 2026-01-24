@@ -1,0 +1,153 @@
+name: CI-Branch + SonarCloud + SCA
+
+on:
+  push:
+    branches: 
+    - 
+  pull_request:
+  workflow_dispatch:
+
+env:
+  AZURE_WEBAPP_NAME: in5nite
+  DOTNET_VERSION: '10.0.x'
+  PROJECT_PATH: './ADWebApplication/ADWebApplication.csproj'
+
+jobs:
+  # =========================================================
+  # JOB 1: CI + SonarCloud + OWASP DEPENDENCY-CHECK
+  # =========================================================
+  build-and-sast-sca-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ---- Checkout ----
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ---- Setup .NET ----
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      # ---- Install SonarScanner ----
+      - name: Install SonarScanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      # ---- SonarCloud Begin ----
+      - name: SonarCloud Begin
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          dotnet sonarscanner begin \
+            /k:"GDipSA-Team-5_AD-Project" \
+            /o:"gdipsa-team-5" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.cs.cobertura.reportsPaths="**/coverage.cobertura.xml" \
+            /d:sonar.coverage.exclusions="**/Program.cs"
+
+      # ---- Restore & Build main project ----
+      - name: Restore Main Project
+        run: dotnet restore ${{ env.PROJECT_PATH }}
+
+      - name: Build Main Project
+        run: dotnet build ${{ env.PROJECT_PATH }} --no-restore
+
+      # ---- Build Test Project ----
+      - name: Build Test Project
+        run: dotnet build ./ADWebApplication.Tests/ADWebApplication.Tests.csproj
+
+      # ---- Run Tests with Coverage ----
+      - name: Test with Coverage
+        run: |
+          dotnet test ./ADWebApplication.Tests/ADWebApplication.Tests.csproj \
+            --collect:"XPlat Code Coverage"
+
+      - name: Debug coverage files
+        run: find . -name "coverage.cobertura.xml"
+
+      # ---- SonarCloud End ----
+      - name: SonarCloud End
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: dotnet sonarscanner end
+
+      # ---- Sonar Quality Gate ----
+      - name: SonarCloud Quality Gate
+        uses: SonarSource/sonarqube-quality-gate-action@v1.2.0
+        with:
+          scanMetadataReportFile: .sonarqube/out/.sonar/report-task.txt
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      # ---- Upload Sonar Artifacts ----
+      - name: Upload SonarCloud artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonarcloud-artifacts
+          path: |
+            .sonarqube/out
+            coverage/coverage.opencover.xml
+
+      # ---- OWASP Dependency-Check ----
+      - name: Run OWASP Dependency-Check SCA
+        uses: dependency-check/Dependency-Check_Action@1e54355a8b4c8abaa8cc7d0b70aa655a3bb15a6c
+        with:
+          project: ADWebApplication
+          path: .
+          format: ALL
+          out: ./dependency-check-report
+          args: >
+            --failOnCVSS 7
+            --suppression dependency-check-suppressions.xml
+            --exclude '**/test/**'
+
+      - name: Upload Dependency-Check report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: ./dependency-check-report
+
+  # =========================================================
+  # JOB 2: OWASP ZAP Scan
+  # =========================================================
+  dast-scan:
+    needs: build-and-sast-sca-scan
+    runs-on: ubuntu-latest
+
+    steps:
+      # ---- Checkout code ----
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ---- Publish app locally ----
+      - name: Publish App
+        run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --output publish
+
+      # ---- Start app locally in the background ----
+      - name: Run App Locally
+        run: |
+          nohup dotnet publish/ADWebApplication.dll &  # Start the app in the background
+          echo "Waiting for app to start..."
+          
+          # Check if the app is running on http://localhost:5000 before proceeding
+          until curl -s http://localhost:5000 > /dev/null; do
+            echo "Waiting for app to start..."
+            sleep 2  # Check every 2 seconds
+          done
+          echo "App is running!"
+
+      # ---- Run ZAP Baseline Scan ----
+      - name: Run OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@4ea3deb659d9a669dc5e5c10c49a423e8bb41420
+        with:
+          target: 'http://localhost:5000'
+          fail_action: false
+          artifact_name: zap-report
+          cmd_options: >
+            -J report_json.json
+            -r report_html.html
+          allow_issue_writing: false
