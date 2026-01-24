@@ -65,7 +65,7 @@ jobs:
 
           dotnet test ./ADWebApplication.Tests/ADWebApplication.Tests.csproj \
             /p:CollectCoverage=true \
-            /p:CoverletOutput=coverage/coverage \
+            /p:CoverletOutput=coverage/coverage.opencover.xml \
             /p:CoverletOutputFormat=opencover
 
       # ---- Debug: List coverage directory ----
@@ -74,8 +74,7 @@ jobs:
 
       # ---- Check coverage file ----
       - name: Check coverage file
-        run: |
-          test -f coverage/coverage.opencover.xml && echo "Coverage file found" || exit 1
+        run: test -f coverage/coverage.opencover.xml && echo "Coverage file found" || exit 1
 
       # ---- SonarCloud End ----
       - name: SonarCloud End
@@ -119,6 +118,7 @@ jobs:
         with:
           name: dependency-check-report
           path: ./dependency-check-report
+
 
   # =========================================================
   # JOB 2: BUILD & DEPLOY TO AZURE
