@@ -53,23 +53,27 @@ jobs:
       - name: Build
         run: dotnet build ${{ env.PROJECT_PATH }} --no-restore
 
+      # ---- Run Tests with Coverage ----
       - name: Test with Coverage
         run: |
+          # ensure coverage directory exists
           mkdir -p coverage
+
+          # run tests and generate coverage (without .xml in CoverletOutput)
           dotnet test ./ADWebApplication.Tests/ADWebApplication.Tests.csproj \
             --no-build \
             /p:CollectCoverage=true \
-            /p:CoverletOutputFormat=opencover \
-            /p:CoverletOutput=./coverage/coverage.opencover.xml
+            /p:CoverletOutput=coverage/coverage \
+            /p:CoverletOutputFormat=opencover
 
-      - name: Debug – list all files
+      # ---- Debug: List coverage directory ----
+      - name: List coverage directory
+        run: ls -la coverage
+
+      # ---- Check if coverage file exists ----
+      - name: Check coverage file
         run: |
-          pwd
-          ls -la
-          find . -name "*opencover*.xml"
-
-      - name: Check if coverage file exists
-        run: test -f coverage/coverage.opencover.xml && echo "Coverage file found" || exit 1
+          test -f coverage/coverage.opencover.xml && echo "Coverage file found" || exit 1
 
       - name: SonarCloud End
         env:
