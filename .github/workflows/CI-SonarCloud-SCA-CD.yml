@@ -65,6 +65,9 @@ jobs:
           /p:CoverletOutputFormat=opencover
           /p:CoverletOutput=./coverage.opencover.xml
 
+      - name: Check if coverage file exists
+        run: test -f ./coverage.opencover.xml && echo "Coverage file found" || exit 1
+
       - name: SonarCloud End
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -98,6 +101,7 @@ jobs:
           args: >
             --failOnCVSS 7
             --suppression dependency-check-suppressions.xml
+            --exclude '**/test/**'
 
       - name: Upload Dependency-Check report
         if: always()
@@ -142,3 +146,32 @@ jobs:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: publish
+
+  # =========================================================
+  # JOB 3: OWASP ZAP SECURITY SCAN
+  # =========================================================
+  zap-scan:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: |
+      needs.deploy.result == 'success'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Run OWASP ZAP Security Scan
+        uses: zaproxy/action-full-scan@v1.0.0
+        with:
+          target: 'https://in5nite-e8d9b0g5cad9hrbg.southeastasia-01.azurewebsites.net/'  # Replace with your Azure deployed app URL
+          docker-image: 'owasp/zap2docker-stable'  # Using the stable OWASP ZAP Docker image
+          start-options: '-config api.disablekey=true'  # Disable API key if needed
+
+      - name: Upload ZAP Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report
+          path: /zap/wrk/*.html  # Path to ZAP HTML report file (can be adjusted based on your ZAP config)
