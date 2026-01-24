@@ -1,4 +1,4 @@
-name: CI + SonarCloud + SCA + Deploy
+name: CI + SonarCloud + SCA + ZAP + Deploy
 
 on:
   push:
@@ -13,7 +13,7 @@ env:
 
 jobs:
   # =========================================================
-  # JOB 1: CI + SONARCLOUD + OWASP DEPENDENCY-CHECK
+  # JOB 1A: CI + SonarCloud + OWASP DEPENDENCY-CHECK
   # =========================================================
   build-and-scan:
     runs-on: ubuntu-latest
@@ -110,17 +110,56 @@ jobs:
           name: dependency-check-report
           path: ./dependency-check-report
 
+  # =========================================================
+  # JOB 1B: OWASP ZAP Scan
+  # =========================================================
+  zap-scan:
+    needs: build-and-scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ---- Publish app locally ----
+      - name: Publish App
+        run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --output publish
+
+      # ---- Start app locally in background ----
+      - name: Run App Locally
+        run: |
+          dotnet publish/ADWebApplication.dll &
+          echo "Waiting for app to start..."
+          sleep 10
+
+      # ---- Run ZAP Baseline Scan ----
+      - name: Run OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.9.0
+        with:
+          target: 'http://localhost:5000'
+          failOnRisk: 'high'
+          format: 'html'
+          output: zap_report.html
+
+      - name: Upload ZAP report
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report
+          path: zap_report.html
 
   # =========================================================
   # JOB 2: BUILD & DEPLOY TO AZURE
   # =========================================================
   deploy:
-    needs: build-and-scan
+    needs: 
+      - build-and-scan
+      - zap-scan
     runs-on: windows-latest
     if: |
       github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&
-      needs.build-and-scan.result == 'success'
+      needs.build-and-scan.result == 'success' &&
+      needs.zap-scan.result == 'success'
 
     steps:
       - name: Checkout code
@@ -141,7 +180,7 @@ jobs:
         run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --output publish
 
       - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@55cf31b49e675aa17be3df3f6c1c54170f250cc5
+        uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
