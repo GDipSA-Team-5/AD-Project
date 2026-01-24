@@ -65,13 +65,16 @@ jobs:
           /p:CoverletOutputFormat=opencover
           /p:CoverletOutput=./coverage.opencover.xml
 
-      - name: List files in current directory (debugging)
-        run: ls -la
-
-      - name: Check if coverage file exists after tests
+      - name: Debug – list all files
         run: |
-          ls -la ./coverage
-          test -f ./coverage/coverage.opencover.xml && echo "Coverage file found" || exit 1
+          pwd
+          ls -la
+
+      - name: Find coverage file
+        run: find . -name "*opencover*.xml"
+
+      - name: Check if coverage file exists
+        run: test -f coverage.opencover.xml && echo "Coverage file found" || exit 1
 
       - name: SonarCloud End
         env:
