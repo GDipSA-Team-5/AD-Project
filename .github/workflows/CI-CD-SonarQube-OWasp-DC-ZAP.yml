@@ -13,9 +13,9 @@ env:
 
 jobs:
   # =========================================================
-  # JOB 1A: CI + SonarCloud + OWASP DEPENDENCY-CHECK
+  # JOB 1: CI + SonarCloud + OWASP DEPENDENCY-CHECK
   # =========================================================
-  build-and-scan:
+  build-and-sast-sca-scan:
     runs-on: ubuntu-latest
 
     steps:
@@ -75,7 +75,7 @@ jobs:
 
       # ---- Sonar Quality Gate ----
       - name: SonarCloud Quality Gate
-        uses: SonarSource/sonarqube-quality-gate-action@cb3ed20f9fec62b4c3b8ad9e77656c6adaade913
+        uses: SonarSource/sonarqube-quality-gate-action@main
         with:
           scanMetadataReportFile: .sonarqube/out/.sonar/report-task.txt
         env:
@@ -92,7 +92,7 @@ jobs:
 
       # ---- OWASP Dependency-Check ----
       - name: Run OWASP Dependency-Check SCA
-        uses: dependency-check/Dependency-Check_Action@1e54355a8b4c8abaa8cc7d0b70aa655a3bb15a6c
+        uses: dependency-check/Dependency-Check_Action@main
         with:
           project: ADWebApplication
           path: .
@@ -111,10 +111,10 @@ jobs:
           path: ./dependency-check-report
 
   # =========================================================
-  # JOB 1B: OWASP ZAP Scan
+  # JOB 2: OWASP ZAP Scan
   # =========================================================
-  zap-scan:
-    needs: build-and-scan
+  dast-scan:
+    needs: build-and-sast-sca-scan
     runs-on: ubuntu-latest
 
     steps:
@@ -152,14 +152,14 @@ jobs:
   # =========================================================
   deploy:
     needs: 
-      - build-and-scan
-      - zap-scan
+      - build-and-sast-sca-scan
+      - dast-scan
     runs-on: windows-latest
     if: |
       github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&
-      needs.build-and-scan.result == 'success' &&
-      needs.zap-scan.result == 'success'
+      needs.build-and-sast-sca-scan.result == 'success' &&
+      needs.dast-scan.result == 'success'
 
     steps:
       - name: Checkout code
