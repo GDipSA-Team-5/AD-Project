@@ -1,0 +1,117 @@
+@model ADWebApplication.Models.CollectionConfirmationVM
+
+@{
+    ViewData["Title"] = "Confirm Collection";
+}
+
+<div class="container py-4">
+    <!-- Breadcrumb-ish Header (Optional, kept simple) -->
+    <h2 class="fw-bold mb-3">Confirm Collection</h2>
+    <p class="text-muted">Record details for this collection point</p>
+
+    <!-- Location Info Card -->
+    <div class="card bg-light border-0 mb-4">
+        <div class="card-body">
+            <h5 class="card-title fw-bold text-primary mb-3">Collection Location</h5>
+            <div class="row">
+                <div class="col-md-6 mb-2">
+                    <small class="text-muted d-block uppercase">Location</small>
+                    <span class="fw-bold">@Model.LocationName</span>
+                </div>
+                <div class="col-md-6 mb-2">
+                    <small class="text-muted d-block uppercase">Bin ID</small>
+                    <span class="fw-bold">@Model.BinId</span>
+                </div>
+                <div class="col-md-6">
+                    <small class="text-muted d-block uppercase">Address</small>
+                    <span>@Model.Address</span>
+                </div>
+                 <div class="col-md-6">
+                    <small class="text-muted d-block uppercase">Zone</small>
+                    <span>@Model.Zone</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Collection Form -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <form asp-action="ConfirmCollection" method="post">
+                <input type="hidden" asp-for="PointId" />
+                <input type="hidden" asp-for="LocationName" />
+                <input type="hidden" asp-for="Address" />
+                <input type="hidden" asp-for="BinId" />
+                <input type="hidden" asp-for="Zone" />
+
+                <!-- Row 1: Weight & Time -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="CollectedWeightKg" class="form-label fw-bold">Weight (kg) <span class="text-danger">*</span></label>
+                        <input asp-for="CollectedWeightKg" class="form-control" type="number" step="0.1" placeholder="0.0" />
+                        <span asp-validation-for="CollectedWeightKg" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="CollectionTime" class="form-label fw-bold">Collection Time</label>
+                        <input asp-for="CollectionTime" class="form-control" type="time" />
+                    </div>
+                </div>
+
+                <!-- Row 2: Bin Condition -->
+                <div class="mb-3">
+                    <label asp-for="BinCondition" class="form-label fw-bold">Bin Condition</label>
+                    <select asp-for="BinCondition" class="form-select">
+                        <option value="Good">Good</option>
+                        <option value="Damaged">Damaged</option>
+                        <option value="Full">Overflowing</option>
+                        <option value="Vandalized">Vandalized</option>
+                    </select>
+                </div>
+
+                <!-- Row 3: Categories -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">E-Waste Categories Collected</label>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" asp-for="CollectedElectronics" />
+                                <label class="form-check-label" asp-for="CollectedElectronics">Electronics</label>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" asp-for="CollectedBatteries" />
+                                <label class="form-check-label" asp-for="CollectedBatteries">Batteries</label>
+                            </div>
+                        </div>
+                         <div class="col-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" asp-for="CollectedCables" />
+                                <label class="form-check-label" asp-for="CollectedCables">Cables</label>
+                            </div>
+                        </div>
+                         <div class="col-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" asp-for="CollectedAccessories" />
+                                <label class="form-check-label" asp-for="CollectedAccessories">Accessories</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 4: Remarks -->
+                <div class="mb-4">
+                    <label asp-for="Remarks" class="form-label fw-bold">Remarks (Optional)</label>
+                    <textarea asp-for="Remarks" class="form-control" rows="3" placeholder="Add any additional notes about this collection..."></textarea>
+                </div>
+
+                <!-- Actions -->
+                <div class="d-flex justify-content-between gap-3">
+                    <a asp-action="RouteDetails" asp-route-id="R-SG-101" class="btn btn-outline-secondary px-4 py-2 w-50">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-4 py-2 w-50">Complete Collection</button>
+                    <!-- NOTE: Changed from 'Add Photo' to 'Complete' per advice -->
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

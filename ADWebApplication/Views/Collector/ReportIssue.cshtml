@@ -1,0 +1,127 @@
+@model ADWebApplication.Models.ReportIssueVM
+
+@{
+    ViewData["Title"] = "Report Bin Issue";
+}
+
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Report Bin Issue</h2>
+            <p class="text-muted mb-0">Document problems with collection bins</p>
+        </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <form asp-action="ReportIssue" method="post" enctype="multipart/form-data">
+                
+                <!-- Location Select -->
+                <div class="mb-4">
+                    <label asp-for="PointId" class="form-label fw-bold">Location <span class="text-danger">*</span></label>
+                    <select asp-for="PointId" class="form-select form-select-lg">
+                        <option value="">Select location...</option>
+                        <option value="CP-1">Tampines Mall - Loading Bay</option>
+                        <option value="CP-2">Bedok Mall - Basement 2</option>
+                        <option value="CP-3">Changi City Point</option>
+                        <option value="CP-4">Pasir Ris White Sands</option>
+                    </select>
+                    <span asp-validation-for="PointId" class="text-danger"></span>
+                </div>
+
+                <!-- Issue Type (Radio Grid) -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold mb-3">Issue Type <span class="text-danger">*</span></label>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-check p-3 border rounded">
+                                <input class="form-check-input" type="radio" asp-for="IssueType" value="Bin Overflow" id="issue1">
+                                <label class="form-check-label w-100" for="issue1">Bin Overflow</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check p-3 border rounded">
+                                <input class="form-check-input" type="radio" asp-for="IssueType" value="Bin Damaged" id="issue2">
+                                <label class="form-check-label w-100" for="issue2">Bin Damaged</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check p-3 border rounded">
+                                <input class="form-check-input" type="radio" asp-for="IssueType" value="Lock Malfunction" id="issue3">
+                                <label class="form-check-label w-100" for="issue3">Lock Malfunction</label>
+                            </div>
+                        </div>
+                         <div class="col-md-6">
+                            <div class="form-check p-3 border rounded">
+                                <input class="form-check-input" type="radio" asp-for="IssueType" value="Access Issues" id="issue4">
+                                <label class="form-check-label w-100" for="issue4">Access Issues</label>
+                            </div>
+                        </div>
+                         <div class="col-md-6">
+                            <div class="form-check p-3 border rounded">
+                                <input class="form-check-input" type="radio" asp-for="IssueType" value="Contamination" id="issue5">
+                                <label class="form-check-label w-100" for="issue5">Contamination</label>
+                            </div>
+                        </div>
+                         <div class="col-md-6">
+                            <div class="form-check p-3 border rounded">
+                                <input class="form-check-input" type="radio" asp-for="IssueType" value="Other" id="issue6">
+                                <label class="form-check-label w-100" for="issue6">Other</label>
+                            </div>
+                        </div>
+                    </div>
+                    <span asp-validation-for="IssueType" class="text-danger"></span>
+                </div>
+
+                <!-- Severity -->
+                <div class="mb-4">
+                    <label asp-for="Severity" class="form-label fw-bold">Severity <span class="text-danger">*</span></label>
+                    <select asp-for="Severity" class="form-select">
+                        <option value="">Select severity...</option>
+                        <option value="Low">Low - Cosmetic issue, still functional</option>
+                        <option value="Medium">Medium - Needs attention soon</option>
+                        <option value="High">High - Urgent, bin unusable or unsafe</option>
+                    </select>
+                     <span asp-validation-for="Severity" class="text-danger"></span>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-4">
+                    <label asp-for="Description" class="form-label fw-bold">Description <span class="text-danger">*</span></label>
+                    <textarea asp-for="Description" class="form-control" rows="4" placeholder="Describe the issue in detail.."></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <!-- Photo Evidence -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Photo Evidence (Recommended)</label>
+                    <div class="border dashed-border p-5 text-center rounded bg-light" style="border: 2px dashed #dee2e6;">
+                        <i class="bi bi-camera text-muted" style="font-size: 2rem;"></i>
+                        <p class="mb-2 mt-2">Take or upload a photo of the issue</p>
+                        <input asp-for="PhotoEvidence" type="file" class="form-control w-50 mx-auto" accept="image/*" />
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="d-flex justify-content-between gap-3 pt-3">
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4 py-2 w-50">Cancel</a>
+                    <button type="submit" class="btn btn-warning text-white px-4 py-2 w-50">Submit Report</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-check-input:checked + .form-check-label {
+        font-weight: bold;
+        color: var(--bs-primary);
+    }
+    .form-check-input:checked {
+        background-color: var(--bs-primary);
+        border-color: var(--bs-primary);
+    }
+</style>

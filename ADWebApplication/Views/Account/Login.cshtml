@@ -1,0 +1,54 @@
+﻿@model ADWebApplication.Models.CollectorLoginVM
+
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow mt-5">
+            <div class="card-header bg-primary text-white">
+                <h3 class="card-title mb-0">Login</h3>
+            </div>
+            <div class="card-body">
+                <form asp-action="Login" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Email" class="control-label"></label>
+                        <input asp-for="Email" class="form-control" placeholder="collector@ewaste.com" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Password" class="control-label"></label>
+                        <input asp-for="Password" class="form-control" placeholder="Password123" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" asp-for="RememberMe" />
+                        <label class="form-check-label" asp-for="RememberMe">
+                            @Html.DisplayNameFor(m => m.RememberMe)
+                        </label>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-block">Log In</button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-muted text-center py-3">
+                <p class="mb-2">For demo access use:</p>
+                <div class="small"><strong>Collector:</strong> collector@ewaste.com / Password123</div>
+                <div class="small mt-1"><strong>Admin:</strong> admin@ewaste.com / Password123</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
