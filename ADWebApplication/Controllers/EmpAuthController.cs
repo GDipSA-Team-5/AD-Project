@@ -194,7 +194,7 @@ public class EmpAuthController : Controller
                 new AuthenticationProperties
                 {
                     IsPersistent = true,
-                    ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30)
                 }
             );
 

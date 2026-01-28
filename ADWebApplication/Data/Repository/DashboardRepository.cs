@@ -18,7 +18,7 @@ namespace ADWebApplication.Data.Repository
 
         public DashboardRepository(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("SQLDatabase");
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
         public async Task<DashboardKPIs> GetAdminDashboardAsync(DateTime? forMonth = null)

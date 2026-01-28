@@ -4,6 +4,7 @@ using Microsoft.VisualBasic;
 using ADWebApplication.Models;
 using ADWebApplication.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using ADWebApplication.Data.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,7 @@ builder.Services.AddControllersWithViews();
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
 
 
 builder.Services.AddDbContext<In5niteDbContext>(options =>
@@ -44,7 +46,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     .AddCookie(opt =>
     {
         opt.LoginPath = "/EmpAuth/Login";
-        opt.ExpireTimeSpan = TimeSpan.FromHours(8);
+        opt.ExpireTimeSpan = TimeSpan.FromMinutes(30);
         opt.SlidingExpiration = true;
     });
 builder.Services.AddAuthorization();

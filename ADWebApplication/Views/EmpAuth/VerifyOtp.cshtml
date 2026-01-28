@@ -45,7 +45,7 @@
             <button class="btn btn-primary w-100 mb-3" type="submit" id="verifyBtn">Verify & Continue</button>
 
             <div class="d-flex justify-content-between align-items-center">
-                <a class="text-decoration-none text-muted" href="@Url.Action("Login","AdminAuth")">← Back</a>
+                <a class="text-decoration-none text-muted" href="@Url.Action("Login","EmpAuth")">← Back</a>
 
                 <div class="text-end">
                     <button class="btn btn-link p-0 text-decoration-none" type="button" id="resendBtn" disabled>Resend OTP</button>
@@ -125,7 +125,7 @@
         resendBtn.disabled = true;
         countdownText.textContent = "Sending OTP...";
 
-        fetch('@Url.Action("ResendOtp", "AdminAuth")', {
+        fetch('@Url.Action("ResendOtp", "EmpAuth")', {
             method: "POST",
             headers: { "RequestVerificationToken": token }
         })

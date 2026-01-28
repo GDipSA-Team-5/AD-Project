@@ -121,10 +121,10 @@
         new Chart(categoryCtx, {
             type: 'doughnut',
             data: {
-                labels: dashboardData.categoryDistribution.map(d => d.name),
+                labels: dashboardData.categoryBreakdowns.map(d => d.name),
                 datasets: [{
-                    data: dashboardData.categoryDistribution.map(d => d.value),
-                    backgroundColor: dashboardData.categoryDistribution.map(d => d.color)
+                    data: dashboardData.categoryBreakdowns.map(d => d.value),
+                    backgroundColor: dashboardData.categoryBreakdowns.map(d => d.color)
                 }]
             }
         });
@@ -134,16 +134,16 @@
         new Chart(areaCtx, {
             type: 'bar',
             data: {
-                labels: dashboardData.areaPerformance.map(d => d.area),
+                labels: dashboardData.performanceMetrics.map(d => d.area),
                 datasets: [
                     {
                         label: 'Collections',
-                        data: dashboardData.areaPerformance.map(d => d.collections),
+                        data: dashboardData.performanceMetrics.map(d => d.collections),
                         backgroundColor: '#8b5cf6'
                     },
                     {
                         label: 'Participation %',
-                        data: dashboardData.areaPerformance.map(d => d.participation),
+                        data: dashboardData.performanceMetrics.map(d => d.participation),
                         backgroundColor: '#3b82f6'
                     }
                 ]
