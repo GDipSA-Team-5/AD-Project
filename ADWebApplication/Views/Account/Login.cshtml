@@ -1,4 +1,4 @@
-﻿@model ADWebApplication.Models.CollectorLoginVM
+@model ADWebApplication.Models.CollectorLoginVm
 
 @{
     ViewData["Title"] = "Login";
@@ -15,9 +15,9 @@
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                     <div class="form-group mb-3">
-                        <label asp-for="Email" class="control-label"></label>
-                        <input asp-for="Email" class="form-control" placeholder="collector@ewaste.com" />
-                        <span asp-validation-for="Email" class="text-danger"></span>
+                        <label asp-for="Username" class="control-label"></label>
+                        <input asp-for="Username" class="form-control" placeholder="CO1102" />
+                        <span asp-validation-for="Username" class="text-danger"></span>
                     </div>
 
                     <div class="form-group mb-3">
@@ -40,8 +40,7 @@
             </div>
             <div class="card-footer text-muted text-center py-3">
                 <p class="mb-2">For demo access use:</p>
-                <div class="small"><strong>Collector:</strong> collector@ewaste.com / Password123</div>
-                <div class="small mt-1"><strong>Admin:</strong> admin@ewaste.com / Password123</div>
+                <div class="small"><strong>Collector:</strong> CO1102 / Password123</div>
             </div>
         </div>
     </div>

@@ -19,7 +19,7 @@ namespace ADWebApplication.Models
 
         public int StopSequence { get; set; }
 
-        public TimeSpan? PlannedCollectionTime { get; set; }
+        public DateTime? PlannedCollectionTime { get; set; }
 
         public string? IssueLog { get; set; } // Optional notes
     }

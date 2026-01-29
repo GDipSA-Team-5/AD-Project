@@ -1,7 +1,8 @@
-﻿using ADWebApplication.Models;
+using ADWebApplication.Data;
+using ADWebApplication.Models;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 
@@ -9,6 +10,13 @@ namespace ADWebApplication.Controllers
 {
     public class AccountController : Controller
     {
+        private readonly ApplicationDbContext _db;
+
+        public AccountController(ApplicationDbContext db)
+        {
+            _db = db;
+        }
+
         [HttpGet]
         public IActionResult Login()
         {
@@ -16,54 +24,51 @@ namespace ADWebApplication.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(CollectorLoginVM model)
+        public async Task<IActionResult> Login(CollectorLoginVm model)
         {
             if (ModelState.IsValid)
             {
-                // Hardcoded validation for demo purposes
-                // In production, check against database (e.g., Azure SQL with EF Core)
-                if (model.Email == "collector@ewaste.com" && model.Password == "Password123")
+                var user = await _db.Employees
+                    .Include(e => e.Role)
+                    .FirstOrDefaultAsync(e => e.Username == model.Username && e.IsActive);
+
+                if (user == null)
                 {
-                    var claims = new List<Claim>
-                    {
-                        new Claim(ClaimTypes.Name, model.Email),
-                        new Claim(ClaimTypes.Role, "Collector"),
-                        new Claim("FullName", "John"),
-                        new Claim(ClaimTypes.GivenName, "John") 
-                    };
-
-                    var claimsIdentity = new ClaimsIdentity(claims, "CookieAuth");
-                    var authProperties = new AuthenticationProperties
-                    {
-                        IsPersistent = model.RememberMe
-                    };
-
-                    await HttpContext.SignInAsync("CookieAuth", new ClaimsPrincipal(claimsIdentity), authProperties);
-
-                    return RedirectToAction("Index", "Collector");
+                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    return View(model);
                 }
-                else if (model.Email == "admin@ewaste.com" && model.Password == "Password123")
+
+                if (!BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash))
                 {
-                    var claims = new List<Claim>
-                    {
-                        new Claim(ClaimTypes.Name, model.Email),
-                        new Claim(ClaimTypes.Role, "Admin"),
-                        new Claim("FullName", "Admin User"),
-                        new Claim(ClaimTypes.GivenName, "Admin")
-                    };
+                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    return View(model);
+                }
 
-                    var claimsIdentity = new ClaimsIdentity(claims, "CookieAuth");
-                    var authProperties = new AuthenticationProperties
-                    {
-                        IsPersistent = model.RememberMe
-                    };
+                var roleName = user.Role?.Name ?? "Collector";
 
-                    await HttpContext.SignInAsync("CookieAuth", new ClaimsPrincipal(claimsIdentity), authProperties);
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.EmployeeId.ToString()),
+                    new Claim(ClaimTypes.Name, user.Username),
+                    new Claim(ClaimTypes.Role, roleName),
+                    new Claim("FullName", user.Name),
+                    new Claim(ClaimTypes.GivenName, user.Name)
+                };
 
+                var claimsIdentity = new ClaimsIdentity(claims, "CookieAuth");
+                var authProperties = new AuthenticationProperties
+                {
+                    IsPersistent = model.RememberMe
+                };
+
+                await HttpContext.SignInAsync("CookieAuth", new ClaimsPrincipal(claimsIdentity), authProperties);
+
+                if (roleName == "Admin")
+                {
                     return RedirectToAction("Index", "Admin");
                 }
 
-                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                return RedirectToAction("Index", "Collector");
             }
 
             return View(model);

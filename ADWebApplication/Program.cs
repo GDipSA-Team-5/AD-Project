@@ -1,7 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
 using ADWebApplication.Data;
-using ADWebApplication.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
@@ -14,10 +12,14 @@ builder.Services.AddAuthentication("CookieAuth")
         options.AccessDeniedPath = "/Account/AccessDenied";
     });
 
-// Database Configuration (Paused for Team Integration)
-// var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-// builder.Services.AddDbContext<ApplicationDbContext>(options =>
-//     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException("Missing DefaultConnection. Set it in appsettings.Development.json.");
+}
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 36))));
 
 // Identity Configuration (Paused)
 // builder.Services.AddIdentity<ApplicationUser, IdentityRole>()

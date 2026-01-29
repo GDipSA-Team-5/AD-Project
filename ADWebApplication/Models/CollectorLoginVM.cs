@@ -1,16 +1,16 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace ADWebApplication.Models
 {
-    public class CollectorLoginVM
+    public class CollectorLoginVm
     {
-        [Required(ErrorMessage = "Email is required.")]
-        [EmailAddress(ErrorMessage = "Invalid email address.")]
-        public string Email { get; set; } = "";
+        [Required(ErrorMessage = "Username is required.")]
+        [MaxLength(100)]
+        public string Username { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Password is required.")]
         [DataType(DataType.Password)]
-        public string Password { get; set; } = "";
+        public string Password { get; set; } = string.Empty;
 
         public bool RememberMe { get; set; }
     }

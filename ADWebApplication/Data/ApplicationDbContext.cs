@@ -14,10 +14,17 @@ namespace ADWebApplication.Data
         public DbSet<RoutePlan> RoutePlans { get; set; }
         public DbSet<RouteStop> RouteStops { get; set; }
         public DbSet<CollectionBin> CollectionBins { get; set; }
+        public DbSet<Employee> Employees { get; set; }
+        public DbSet<Role> EmployeeRoles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<Employee>()
+                .HasOne(e => e.Role)
+                .WithMany()
+                .HasForeignKey(e => e.RoleId);
 
 
         }
