@@ -74,24 +74,72 @@ namespace ADWebApplication.Controllers
         }
 
         [HttpGet]
-        public IActionResult ReportIssue(string? pointId)
+        public async Task<IActionResult> ReportIssue()
         {
-            var model = new ReportIssueVM { PointId = pointId ?? "" };
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized();
+            }
+
+            // Fetch bins from today's route assignments
+            var today = DateTime.Today;
+            var todaysBins = await _db.RouteAssignments
+                .Where(ra => ra.AssignedTo == username)
+                .SelectMany(ra => ra.RoutePlans)
+                .Where(rp => rp.PlannedDate.Date == today)
+                .SelectMany(rp => rp.RouteStops)
+                .Where(rs => rs.CollectionBin != null)
+                .Select(rs => new BinOption
+                {
+                    BinId = rs.CollectionBin!.BinId,
+                    LocationName = rs.CollectionBin.LocationName ?? "",
+                    Region = rs.CollectionBin.Region != null ? rs.CollectionBin.Region.RegionName : ""
+                })
+                .Distinct()
+                .ToListAsync();
+
+            var model = new ReportIssueVM 
+            { 
+                AvailableBins = todaysBins
+            };
+            
             return View(model);
         }
 
         [HttpPost]
-        public IActionResult ReportIssue(ReportIssueVM model)
+        public async Task<IActionResult> ReportIssue(ReportIssueVM model)
         {
             if (!ModelState.IsValid)
             {
+                // Reload bins if validation fails
+                var username = User.Identity?.Name;
+                if (!string.IsNullOrEmpty(username))
+                {
+                    var today = DateTime.Today;
+                    model.AvailableBins = await _db.RouteAssignments
+                        .Where(ra => ra.AssignedTo == username)
+                        .SelectMany(ra => ra.RoutePlans)
+                        .Where(rp => rp.PlannedDate.Date == today)
+                        .SelectMany(rp => rp.RouteStops)
+                        .Where(rs => rs.CollectionBin != null)
+                        .Select(rs => new BinOption
+                        {
+                            BinId = rs.CollectionBin!.BinId,
+                            LocationName = rs.CollectionBin.LocationName ?? "",
+                            Region = rs.CollectionBin.Region != null ? rs.CollectionBin.Region.RegionName : ""
+                        })
+                        .Distinct()
+                        .ToListAsync();
+                }
                 return View(model);
             }
 
-            // TODO: Process report (Mock)
-            // Save issue details...
-
-            TempData["SuccessMessage"] = "Issue reported successfully!";
+            // TODO: Save issue to database
+            // Options: Create IssueLog table OR use RouteStop.IssueLog/CollectionDetails.IssueLog JSONB field
+            // For now, just store in TempData (placeholder)
+            
+            TempData["SuccessMessage"] = $"Issue reported for Bin #{model.BinId} - {model.LocationName}";
             return RedirectToAction("Index");
         }
 

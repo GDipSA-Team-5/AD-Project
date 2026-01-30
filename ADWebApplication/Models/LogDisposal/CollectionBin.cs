@@ -1,7 +1,7 @@
-using System.Collections.Generic;
+using System.Collections.Generic;  
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-namespace ADWebApplication.Models;
+namespace ADWebApplication.Models.LogDisposal;
     [Table("CollectionBin")]
     public class CollectionBin
     {

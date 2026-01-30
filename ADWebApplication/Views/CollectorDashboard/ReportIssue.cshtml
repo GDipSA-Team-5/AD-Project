@@ -1,0 +1,107 @@
+@model ADWebApplication.Models.ReportIssueVM
+
+@{
+    ViewData["Title"] = "Report Issue";
+}
+
+<div class="container py-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-warning">
+            <h5 class="mb-0">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                Report an Issue
+            </h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="ReportIssue" method="post">
+                <div class="mb-3">
+                    <label asp-for="BinId" class="form-label">Select Bin from Today's Route</label>
+                    <select asp-for="BinId" class="form-select" id="binSelect">
+                        <option value="">-- Select a bin --</option>
+                        @foreach (var bin in Model.AvailableBins)
+                        {
+                            <option value="@bin.BinId" 
+                                    data-location="@bin.LocationName" 
+                                    data-region="@bin.Region">
+                                @bin.DisplayText
+                            </option>
+                        }
+                    </select>
+                    <span asp-validation-for="BinId" class="text-danger"></span>
+                </div>
+
+                <!-- Auto-populated location details -->
+                <div id="locationDetails" class="alert alert-info" style="display: none;">
+                    <h6>📍 Location Details:</h6>
+                    <p class="mb-1"><strong>Location:</strong> <span id="displayLocation"></span></p>
+                    <p class="mb-0"><strong>Region:</strong> <span id="displayRegion"></span></p>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="IssueType" class="form-label">Issue Type</label>
+                    <select asp-for="IssueType" class="form-select">
+                        <option value="">-- Select Issue Type --</option>
+                        <option value="Overflow">Bin Overflow</option>
+                        <option value="Damaged">Bin Damaged</option>
+                        <option value="AccessIssue">Access Issue (Locked/Blocked)</option>
+                        <option value="Missing">Bin Missing</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <span asp-validation-for="IssueType" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Severity" class="form-label">Severity</label>
+                    <select asp-for="Severity" class="form-select">
+                        <option value="">-- Select Severity --</option>
+                        <option value="Low">Low - Can wait</option>
+                        <option value="Medium">Medium - Should address soon</option>
+                        <option value="High">High - Urgent</option>
+                    </select>
+                    <span asp-validation-for="Severity" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">Description</label>
+                    <textarea asp-for="Description" class="form-control" rows="4" placeholder="Describe the issue in detail..."></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-send"></i> Submit Report
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Auto-populate location details when bin is selected
+        document.getElementById('binSelect').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const locationDetails = document.getElementById('locationDetails');
+            
+            if (this.value) {
+                // Get data attributes
+                const location = selectedOption.getAttribute('data-location');
+                const region = selectedOption.getAttribute('data-region');
+                
+                // Populate display fields
+                document.getElementById('displayLocation').textContent = location;
+                document.getElementById('displayRegion').textContent = region;
+                
+                // Show the location details box
+                locationDetails.style.display = 'block';
+            } else {
+                // Hide if no bin selected
+                locationDetails.style.display = 'none';
+            }
+        });
+    </script>
+}
