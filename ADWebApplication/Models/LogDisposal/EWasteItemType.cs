@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ADWebApplication.Models.LogDisposal;
+namespace ADWebApplication.Models;
 
 [Table("ewasteitemtype")]
 public class EWasteItemType{
