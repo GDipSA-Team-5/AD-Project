@@ -61,46 +61,46 @@ namespace ADWebApplication.Controllers
     {
         public IActionResult Index()
         {
-            var viewModel = new AdminDashboardViewModel
-            {
-                KPIs = new DashboardKPIs
-                {
-                    TotalUsers = 1280,
-                    UserGrowthPercent = 4.2m,
-                    TotalCollections = 312,
-                    CollectionGrowthPercent = 6.8m,
-                    TotalWeightRecycled = 1450.5m,
-                    WeightGrowthPercent = 3.1m,
-                    AvgBinFillRate = 72.4m,
-                    BinFillRateChange = -1.5m
-                },
+            // var viewModel = new AdminDashboardViewModel
+            // {
+            //     KPIs = new DashboardKPIs
+            //     {
+            //         TotalUsers = 1280,
+            //         UserGrowthPercent = 4.2m,
+            //         TotalCollections = 312,
+            //         CollectionGrowthPercent = 6.8m,
+            //         TotalWeightRecycled = 1450.5m,
+            //         WeightGrowthPercent = 3.1m,
+            //         AvgBinFillRate = 72.4m,
+            //         BinFillRateChange = -1.5m
+            //     },
 
-                CollectionTrends = new List<CollectionTrend>
-                {
-                    new() { Month = "2025-10", Collections = 180, Weight = 820 },
-                    new() { Month = "2025-11", Collections = 220, Weight = 940 },
-                    new() { Month = "2025-12", Collections = 260, Weight = 1120 },
-                    new() { Month = "2026-01", Collections = 312, Weight = 1450 }
-                },
+            //     CollectionTrends = new List<CollectionTrend>
+            //     {
+            //         new() { Month = "2025-10", Collections = 180, Weight = 820 },
+            //         new() { Month = "2025-11", Collections = 220, Weight = 940 },
+            //         new() { Month = "2025-12", Collections = 260, Weight = 1120 },
+            //         new() { Month = "2026-01", Collections = 312, Weight = 1450 }
+            //     },
 
-                CategoryBreakdowns = new List<CategoryBreakdown>
-                {
-                    new() { Category = "Computers", Value = 35, Color = "#3b82f6" },
-                    new() { Category = "Mobile Devices", Value = 28, Color = "#10b981" },
-                    new() { Category = "Home Appliances", Value = 22, Color = "#f59e0b" },
-                    new() { Category = "Accessories", Value = 15, Color = "#8b5cf6" }
-                },
+            //     CategoryBreakdowns = new List<CategoryBreakdown>
+            //     {
+            //         new() { Category = "Computers", Value = 35, Color = "#3b82f6" },
+            //         new() { Category = "Mobile Devices", Value = 28, Color = "#10b981" },
+            //         new() { Category = "Home Appliances", Value = 22, Color = "#f59e0b" },
+            //         new() { Category = "Accessories", Value = 15, Color = "#8b5cf6" }
+            //     },
 
-                PerformanceMetrics = new List<AvgPerformance>
-                {
-                    new() { Area = "Central", Collections = 120, Participation = 65.5m },
-                    new() { Area = "North", Collections = 80, Participation = 52.3m },
-                    new() { Area = "East", Collections = 65, Participation = 48.1m },
-                    new() { Area = "West", Collections = 47, Participation = 39.8m }
-                }
-            };
+            //     PerformanceMetrics = new List<AvgPerformance>
+            //     {
+            //         new() { Area = "Central", Collections = 120, Participation = 65.5m },
+            //         new() { Area = "North", Collections = 80, Participation = 52.3m },
+            //         new() { Area = "East", Collections = 65, Participation = 48.1m },
+            //         new() { Area = "West", Collections = 47, Participation = 39.8m }
+            //     }
+            // };
 
-            return View(viewModel);
+            return View();
         }
     }
 }
