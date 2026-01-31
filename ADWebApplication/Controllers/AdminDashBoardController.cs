@@ -67,7 +67,7 @@ namespace ADWebApplication.Controllers
             _logger = logger;
         }
 
-        public async Task<IActionResult> Index()
+        /* public async Task<IActionResult> Index()
         {
             try
             {
@@ -94,6 +94,46 @@ namespace ADWebApplication.Controllers
                     HighRiskUnscheduledCount = 0
                 });
             }
+        } */
+        public async Task<IActionResult> Index()
+        {
+            try
+            {
+                _logger.LogInformation("Starting dashboard data retrieval...");
+        
+                var kpis = await _dashboardRepository.GetAdminDashboardAsync();
+                _logger.LogInformation("KPIs retrieved: {Users} users", kpis.TotalUsers);
+        
+                var trends = await _dashboardRepository.GetCollectionTrendsAsync();
+                _logger.LogInformation("Trends retrieved: {Count} records", trends.Count);
+        
+                var categories = await _dashboardRepository.GetCategoryBreakdownAsync();
+                _logger.LogInformation("Categories retrieved: {Count} records", categories.Count);
+        
+                var performance = await _dashboardRepository.GetAvgPerformanceMetricsAsync();
+                _logger.LogInformation("Performance retrieved: {Count} records", performance.Count);
+        
+                var highRisk = await _dashboardRepository.GetHighRiskUnscheduledCountAsync();
+                _logger.LogInformation("High risk count: {Count}", highRisk);
+        
+                var viewModel = new AdminDashboardViewModel
+                {
+                    KPIs = kpis,
+                    CollectionTrends = trends,
+                    CategoryBreakdowns = categories,
+                    PerformanceMetrics = performance,
+                    HighRiskUnscheduledCount = highRisk
+                };
+
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving admin dashboard data.");
+                throw; // ← Change this to THROW instead of returning empty view
+            }
         }
     }
+
 }
+
