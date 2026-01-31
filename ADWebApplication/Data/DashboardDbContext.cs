@@ -19,7 +19,7 @@ namespace ADWebApplication.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<PublicUser>()
-                .ToTable("publicuser");
+                .ToTable("PublicUser");
 
             modelBuilder.Entity<EWasteItemType>()
                 .HasOne(t => t.Category)
