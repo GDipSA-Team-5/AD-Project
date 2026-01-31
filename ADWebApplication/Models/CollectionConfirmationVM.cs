@@ -1,0 +1,40 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace ADWebApplication.Models
+{
+    public class CollectionConfirmationVM
+    {
+        public int StopId { get; set; }
+        public string PointId { get; set; } = string.Empty;
+        public string LocationName { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public string BinId { get; set; } = string.Empty;
+        public string Zone { get; set; } = string.Empty;
+
+        [Range(0, 100, ErrorMessage = "Fill level must be between 0 and 100")]
+        public int BinFillLevel { get; set; }
+
+        [Required]
+        [Range(0.1, 1000, ErrorMessage = "Please enter a valid weight (0.1 - 1000 kg)")]
+        public double CollectedWeightKg { get; set; }
+
+        public DateTime CollectionTime { get; set; } = DateTime.Now;
+
+        public string BinCondition { get; set; } = "Good";
+
+        // Category Checkboxes
+        public bool CollectedElectronics { get; set; }
+        public bool CollectedBatteries { get; set; }
+        public bool CollectedCables { get; set; }
+        public bool CollectedAccessories { get; set; }
+
+        public string? Remarks { get; set; }
+
+        // Next stop preview (optional)
+        public string? NextPointId { get; set; }
+        public string? NextLocationName { get; set; }
+        public string? NextAddress { get; set; }
+        public DateTime? NextPlannedTime { get; set; }
+        public int? NextFillLevel { get; set; }
+    }
+}

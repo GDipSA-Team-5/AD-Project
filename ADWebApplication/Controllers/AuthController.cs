@@ -16,6 +16,17 @@ public class AuthController : ControllerBase
         _db = db;
     }
 
+    [HttpGet("regions")]
+    public async Task<ActionResult<List<Region>>> GetRegions()
+    {
+        var regions = await _db.Regions
+            .AsNoTracking()
+            .OrderBy(r => r.RegionName)
+            .ToListAsync();
+
+        return Ok(regions);
+    }
+
     [HttpPost("register")]
     public async Task<ActionResult<RegisterResponse>> Register([FromBody] RegisterRequest request)
     {
@@ -35,9 +46,8 @@ public class AuthController : ControllerBase
             Email = email,
             Name = request.FullName.Trim(),
             PhoneNumber = request.Phone.Trim(),
-            Address = request.Address.Trim(),
-            ReferralCode = request.ReferralCode?.Trim(),
-            Role = UserRole.USER,
+            RegionId = request.RegionId,
+            IsActive = true,
             Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
             RewardWallet = new RewardWallet
             {
@@ -67,6 +77,15 @@ public class AuthController : ControllerBase
             {
                 Success = false,
                 Message = "Invalid email or password"
+            });
+        }
+
+        if (!user.IsActive)
+        {
+            return Unauthorized(new LoginResponse
+            {
+                Success = false,
+                Message = "Account inactive"
             });
         }
 
