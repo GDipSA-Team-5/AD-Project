@@ -134,6 +134,7 @@ using (var scope = app.Services.CreateScope())
 
     db.SaveChanges();
 }
+app.UseStaticFiles();   
 app.UseRouting();
 app.UseCors("AllowAndroid");
 app.UseSession();
