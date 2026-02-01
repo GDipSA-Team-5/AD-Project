@@ -73,11 +73,37 @@ namespace ADWebApplication.Data.Repository
                 .Where(l => l.DisposalTimeStamp.Year == previousMonth.Year
                             && l.DisposalTimeStamp.Month == previousMonth.Month)
                 .SumAsync(l => (decimal?)l.EstimatedTotalWeight) ?? 0;
+            //User Growth calculation
+            var currentActiveUsersWithDisposals = await (
+                from user in _db.Users
+                join log in _db.DisposalLogs on user.Id equals log.UserId
+                where user.IsActive &&
+                      log.DisposalTimeStamp.Year == targetMonth.Year &&
+                      log.DisposalTimeStamp.Month == targetMonth.Month
+                select user.Id).Distinct().CountAsync();
 
+            // Previous month active users with disposals
+            var prevActiveUsersWithDisposals = await (
+                from user in _db.Users
+                join log in _db.DisposalLogs on user.Id equals log.UserId
+                where user.IsActive &&
+                      log.DisposalTimeStamp.Year == previousMonth.Year &&
+                      log.DisposalTimeStamp.Month == previousMonth.Month
+                select user.Id).Distinct().CountAsync();
+
+            //calculate user growth percentage
+            var userGrowthPercent = prevActiveUsersWithDisposals > 0
+                ? ((currentActiveUsersWithDisposals - prevActiveUsersWithDisposals) * 100.0m / prevActiveUsersWithDisposals)
+                : 0;
+            Console.WriteLine($"Current Active Users with Disposals (Jan 2026): {currentActiveUsersWithDisposals}");
+            Console.WriteLine($"Prev Active Users with Disposals (Dec 2025): {prevActiveUsersWithDisposals}");
+            Console.WriteLine($"User Growth Percent: {userGrowthPercent:F2}%");
+            
             return new DashboardKPIs
             {
                 TotalUsers = totalUsers,
-                UserGrowthPercent = 0,
+                ActiveUsersWithDisposals = currentActiveUsersWithDisposals,
+                UserGrowthPercent = userGrowthPercent,
                 TotalCollections = currentCollections,
                 CollectionGrowthPercent = prevCollections > 0 ? ((currentCollections - prevCollections) * 100.0m / prevCollections) : 0,
                 TotalWeightRecycled = currentWeight,
