@@ -23,7 +23,7 @@ namespace ADWebApplication.Models
         public decimal PredictedFillPercentage { get; set; }
 
         [Column("confidenceScore")]
-        public decimal ConfidenceScore { get; set; }
+        public double? ConfidenceScore { get; set; }
 
         [Column("modelVersion")]
         public string ModelVersion { get; set; } = string.Empty;

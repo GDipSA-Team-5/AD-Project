@@ -197,6 +197,17 @@ namespace ADWebApplication.Controllers
             }
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RefreshPredictions()
+        {
+            await _binPredictionService.RefreshPredictionsForNewCyclesAsync();
+
+            TempData["Success"] = "Predictions refreshed successfully.";
+
+            return RedirectToAction(nameof(Index));
+        }
+
         [HttpGet("BinPredictions")]
         public async Task<IActionResult> BinPredictions(int page = 1, string sort = "Days", string sortDir = "asc", string risk = "All", string timeframe = "All")
         {

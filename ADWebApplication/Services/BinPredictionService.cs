@@ -14,6 +14,11 @@ public class BinPredictionService
     private readonly In5niteDbContext _db;
     private const int Threshold = 80;
 
+    private bool NeedsMlRefresh(FillLevelPrediction? latestPrediction, CollectionDetails latestCollection)
+    {
+        return latestPrediction == null || latestPrediction.PredictedDate < latestCollection.CurrentCollectionDateTime;
+    }
+
     public BinPredictionService(HttpClient httpClient, In5niteDbContext db)
     {
         _httpClient = httpClient;
@@ -58,9 +63,12 @@ public class BinPredictionService
                 .OrderByDescending(p => p.PredictedDate)
                 .FirstOrDefaultAsync();
 
-            bool needsMlRefresh =
-                latestPrediction == null ||
-                latestPrediction.PredictedDate < latest.CurrentCollectionDateTime;
+            if (latestPrediction == null)
+                continue; 
+
+            var predictedGrowth = latestPrediction.PredictedAvgDailyGrowth;
+
+            bool needsMlRefresh = NeedsMlRefresh(latestPrediction, latest);
 
             if (needsMlRefresh)
             {
@@ -88,26 +96,10 @@ public class BinPredictionService
 
             var planningStatus = isScheduled ? "Scheduled" : "Not Scheduled";
 
-            //ML request
-            var req = new MLPredictionRequestDto
-            {
-                container_id = bin.BinId.ToString(),
-                collection_fill_percentage = latest.BinFillLevel,
-                cycle_duration_days = latest.CycleDurationDays.Value,
-                cycle_start_month = latest.CycleStartMonth.Value
-            };
-
-            //ML response
-            var response = await _httpClient.PostAsJsonAsync("/predict", req);
-            response.EnsureSuccessStatusCode();
-
-            var mlResponse = await response.Content.ReadFromJsonAsync<MLPredictionResponseDto>();
-
-            var predictedGrowth = mlResponse.predicted_next_avg_daily_growth;
-
             //derive info from DB records and ML prediction
             var daysElapsed = Math.Max((today - latest.CurrentCollectionDateTime.Value).TotalDays, 0);
 
+            //Fill resets to 0 at last collection
             var estimatedFillToday = Math.Clamp(predictedGrowth * daysElapsed, 0, 100);
             
             int daysTo80;
@@ -178,7 +170,7 @@ public class BinPredictionService
         var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
 
         var pagedRows = query
-            .Skip((page - 1) * pageSize) //skip rows belonging to the prev. page
+            .Skip((page - 1) * pageSize) //skip  rows belonging to the prev. page
             .Take(pageSize) //limit no. of rows displayed to 10
             .ToList();
 
@@ -203,4 +195,62 @@ public class BinPredictionService
             NewCycleDetectedCount = newCycleDetectedCount
         };
     }
+
+    public async Task RefreshPredictionsForNewCyclesAsync()
+    {
+        var today = DateTimeOffset.UtcNow;
+
+        var bins = await _db.CollectionBins
+            .AsNoTracking()
+            .ToListAsync();
+
+        foreach (var bin in bins)
+        {
+            //fetch most recent collection record for each bin
+            var latestCollection = await _db.CollectionDetails
+                .Where(cd => cd.BinId == bin.BinId)
+                .OrderByDescending(cd => cd.CurrentCollectionDateTime)
+                .FirstOrDefaultAsync();
+
+            if (latestCollection == null)
+                continue;
+
+            //fetch the most recent ML prediction record
+            var latestPrediction = await _db.FillLevelPredictions
+                .Where(p => p.BinId == bin.BinId)
+                .OrderByDescending(p => p.PredictedDate)
+                .FirstOrDefaultAsync();
+
+            bool needsRefresh = NeedsMlRefresh(latestPrediction, latestCollection);
+
+            if (!needsRefresh)
+                continue;
+
+            var req = new MLPredictionRequestDto
+            {
+                container_id = bin.BinId.ToString(),
+                collection_fill_percentage = latestCollection.BinFillLevel,
+                cycle_duration_days = latestCollection.CycleDurationDays!.Value,
+                cycle_start_month = latestCollection.CycleStartMonth!.Value
+            };
+
+            var response = await _httpClient.PostAsJsonAsync("/predict", req);
+            response.EnsureSuccessStatusCode();
+
+            var ml = await response.Content.ReadFromJsonAsync<MLPredictionResponseDto>();
+
+            // Save new prediction
+            _db.FillLevelPredictions.Add(new FillLevelPrediction
+            {
+                BinId = bin.BinId,
+                PredictedAvgDailyGrowth = ml.predicted_next_avg_daily_growth,
+                PredictedAt = today.UtcDateTime,
+                ModelVersion = "v1"
+            });
+        }
+
+        await _db.SaveChangesAsync();
+    }
+
+    
 }

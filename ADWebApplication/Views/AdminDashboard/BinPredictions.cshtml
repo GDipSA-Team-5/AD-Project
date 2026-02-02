@@ -5,6 +5,13 @@
     Layout = "_DashboardLayout"; 
 }
 
+@if (TempData["PredictionRefreshSuccess"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["PredictionRefreshSuccess"]
+    </div>
+}
+
 <div class="container-fluid">
 
     <!-- Page title -->
@@ -71,10 +78,15 @@
                             @Model.NewCycleDetectedCount new cycle(s) detected
                         </div>
 
-                        <button class="btn btn-sm btn-outline-secondary w-100">
-                            <i class="bi bi-arrow-repeat me-1"></i>
-                            Refresh Predictions
-                        </button>
+                        <form asp-action="RefreshPredictions" asp-controller="AdminDashboard" method="post">
+                            @Html.AntiForgeryToken()
+
+                            <button class="btn btn-sm btn-outline-secondary w-100"
+                                    @(Model.NewCycleDetectedCount == 0 ? "disabled" : "")>
+                                <i class="bi bi-arrow-repeat me-1"></i>
+                                Refresh Predictions
+                            </button>
+                        </form>
                     }
                     else
                     {
