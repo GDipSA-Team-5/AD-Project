@@ -14,7 +14,9 @@ namespace ADWebApplication.Data.Repository
         Task<List<RouteAssignment>> GetRouteAssignmentsForOfficerAsync(string officerUsername, DateTime oneYearAgo);
         Task<Employee> GetEmployeeByUsernameAsync(string username);
         Task<List<Employee>> GetAvailableCollectionOfficersAsync(DateTime from, DateTime to);
-
+        Task<CollectionBin?> GetBinByIdAsync(int binId);
+        Task UpdateBinAsync(CollectionBin bin);
+        Task CreateBinAsync(CollectionBin bin);
     }
    public class AdminRepository(DashboardDbContext dashboardDb, EmpDbContext empDb, In5niteDbContext infDb) : IAdminRepository
     {
@@ -146,6 +148,23 @@ namespace ADWebApplication.Data.Repository
                     !busyUsernames.Contains(e.Username))
                 .OrderBy(e => e.Username)
                 .ToListAsync();
+        }
+
+        public async Task<CollectionBin?> GetBinByIdAsync(int binId)
+        {
+            return await _dashboardDb.CollectionBins.FindAsync(binId);
+        }
+
+        public async Task UpdateBinAsync(CollectionBin bin)
+        {
+            _dashboardDb.CollectionBins.Update(bin);
+            await _dashboardDb.SaveChangesAsync();
+        }
+
+        public async Task CreateBinAsync(CollectionBin bin)
+        {
+            _dashboardDb.CollectionBins.Add(bin);
+            await _dashboardDb.SaveChangesAsync();
         }
 
 
