@@ -148,7 +148,7 @@ namespace ADWebApplication.Controllers
                         Title = "High overflow risk predicted",
                         Message = $"{highRisk} bins are high-risk and not yet scheduled for collection",
                         LinkText = "View Bin Predictions",
-                        LinkUrl = Url.Action("BinPredictions", "AdminDashboard") ?? ""
+                        LinkUrl = Url.Action("Index", "BinPredictions") ?? ""
                     });
                 }
 
@@ -160,7 +160,7 @@ namespace ADWebApplication.Controllers
                         Title = "Predictions need refresh",
                         Message = $"{mlRefreshCount} bins have new collection cycles detected",
                         LinkText = "Refresh Predictions",
-                        LinkUrl = Url.Action("BinPredictions", "AdminDashboard") ?? ""
+                        LinkUrl = Url.Action("Index", "BinPredictions") ?? ""
                     });
                 }
 
@@ -195,14 +195,6 @@ namespace ADWebApplication.Controllers
                     TotalBinsCount = 0
                 });
             }
-        }
-
-        [HttpGet("BinPredictions")]
-        public async Task<IActionResult> BinPredictions(int page = 1, string sort = "Days", string sortDir = "asc", string risk = "All", string timeframe = "All")
-        {
-            var viewModel = await _binPredictionService.BuildBinPredictionsPageAsync(page, sort, sortDir, risk, timeframe);
-
-            return View(viewModel);
         }
 
         

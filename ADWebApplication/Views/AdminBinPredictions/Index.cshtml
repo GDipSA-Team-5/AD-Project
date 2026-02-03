@@ -5,6 +5,13 @@
     Layout = "_DashboardLayout"; 
 }
 
+@if (TempData["PredictionRefreshSuccess"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["PredictionRefreshSuccess"]
+    </div>
+}
+
 <div class="container-fluid">
 
     <!-- Page title -->
@@ -71,10 +78,14 @@
                             @Model.NewCycleDetectedCount new cycle(s) detected
                         </div>
 
-                        <button class="btn btn-sm btn-outline-secondary w-100">
-                            <i class="bi bi-arrow-repeat me-1"></i>
-                            Refresh Predictions
-                        </button>
+                        <form asp-controller="AdminBinPredictions" asp-action="Refresh" method="post">
+                            @Html.AntiForgeryToken()
+
+                            <button type="submit" class="btn btn-sm btn-outline-secondary w-100">
+                                <i class="bi bi-arrow-repeat me-1"></i>
+                                Refresh Predictions
+                            </button>
+                        </form>
                     }
                     else
                     {
@@ -96,6 +107,7 @@
     
     <form method="get" class="d-flex align-items-center gap-3 flex-wrap mb-3">
 
+        <input type="hidden" name="sortDir" value="@Model.SortDir" />
         <!-- Filters -->
         <div class="d-flex align-items-center gap-2">
             <i class="bi bi-funnel"></i>
@@ -162,7 +174,7 @@
                 </div>
             </div>
 
-            <a href="/AdminDashboard/RoutePlanning" class="btn btn-danger">
+            <a href="#" class="btn btn-danger">
                 <i class="bi bi-lightning-fill me-1"></i>
                 View in Route Planning
             </a>
@@ -378,7 +390,11 @@
             {
                 <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
                     <a class="page-link"
-                       href="?page=@i&risk=@Model.SelectedRisk&timeframe=@Model.SelectedTimeframe&sort=@Model.SortBy">
+                       href="?page=@i
+                        &risk=@Model.SelectedRisk
+                        &timeframe=@Model.SelectedTimeframe
+                        &sort=@Model.SortBy
+                        &sortDir=@Model.SortDir">
                         @i
                     </a>
                 </li>

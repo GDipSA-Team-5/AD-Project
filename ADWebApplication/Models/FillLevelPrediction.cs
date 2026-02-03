@@ -19,11 +19,11 @@ namespace ADWebApplication.Models
         [Column("predictedDate")]
         public DateTime PredictedDate { get; set; }
 
-        [NotMapped]
-        public decimal PredictedFillPercentage { get; set; }
+        [Column("predictedAvgDailyGrowth")]
+        public double PredictedAvgDailyGrowth { get; set; }
 
         [Column("confidenceScore")]
-        public decimal ConfidenceScore { get; set; }
+        public double? ConfidenceScore { get; set; }
 
         [Column("modelVersion")]
         public string ModelVersion { get; set; } = string.Empty;
