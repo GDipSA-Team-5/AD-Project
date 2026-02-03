@@ -19,7 +19,7 @@ namespace ADWebApplication.Models
         [Column("predictedDate")]
         public DateTime PredictedDate { get; set; }
 
-        [Column("predictedFillPercentage")]
+        [NotMapped]
         public decimal PredictedFillPercentage { get; set; }
 
         [Column("confidenceScore")]

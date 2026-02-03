@@ -19,7 +19,8 @@ namespace ADWebApplication.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<PublicUser>()
-                .ToTable("PublicUser");
+                .ToTable("publicuser")
+                .Ignore("RewardWallet");
 
             modelBuilder.Entity<EWasteItemType>()
                 .HasOne(t => t.Category)

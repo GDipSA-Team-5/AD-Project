@@ -14,6 +14,8 @@ namespace ADWebApplication.Data
         public DbSet<EWasteItemType> EWasteItemTypes => Set<EWasteItemType>();
         public DbSet<DisposalLogs> DisposalLogs => Set<DisposalLogs>();
         public DbSet<DisposalLogItem> DisposalLogItems => Set<DisposalLogItem>();
+        public DbSet<RewardWallet> RewardWallets => Set<RewardWallet>();
+        public DbSet<PointTransaction> PointTransactions => Set<PointTransaction>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder){
     modelBuilder.Entity<DisposalLogs>()
@@ -23,7 +25,7 @@ namespace ADWebApplication.Data
 
     modelBuilder.Entity<EWasteItemType>()
         .HasOne(t => t.Category)
-        .WithMany()
+        .WithMany(c => c.EWasteItemTypes)
         .HasForeignKey(t => t.CategoryId);
 
     modelBuilder.Entity<DisposalLogs>()
@@ -31,6 +33,15 @@ namespace ADWebApplication.Data
         .WithMany()
         .HasForeignKey(l => l.BinId);
 
+    modelBuilder.Entity<PointTransaction>()
+        .HasOne<RewardWallet>()
+        .WithMany()
+        .HasForeignKey(p => p.WalletId);
+
+    modelBuilder.Entity<PointTransaction>()
+        .HasOne(p => p.DisposalLog)
+        .WithMany()
+        .HasForeignKey(p => p.LogId);
         }
     }
 }
