@@ -38,12 +38,12 @@
                     Overview Dashboard
             </a>
 
-            <a class="dash-link @(currentController == "AdminDashboard" && currentAction == "BinPredictions" ? "active" : "")"
-                asp-controller="AdminDashboard" asp-action="BinPredictions">
-                <i class="bi bi-graph-up"></i>
-                Bin Predictions
-                @await Component.InvokeAsync("HighRiskBinBadge")
-            </a>
+            <a class="dash-link @(currentController == "AdminBinPredictions" ? "active" : "")"
+                asp-controller="AdminBinPredictions" asp-action="Index">
+                    <i class="bi bi-graph-up"></i>
+                    Bin Predictions
+                    @await Component.InvokeAsync("HighRiskBinBadge")
+                </a>
 
             <a class="dash-link" href="#"><i class="bi bi-diagram-3"></i> Route Planning</a>
             <a class="dash-link" href="#"><i class="bi bi-inboxes"></i> Bin Management</a>

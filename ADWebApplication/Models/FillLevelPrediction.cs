@@ -19,8 +19,8 @@ namespace ADWebApplication.Models
         [Column("predictedDate")]
         public DateTime PredictedDate { get; set; }
 
-        [Column("predictedFillPercentage")]
-        public decimal PredictedFillPercentage { get; set; }
+        [Column("predictedAvgDailyGrowth")]
+        public double PredictedAvgDailyGrowth { get; set; }
 
         [Column("confidenceScore")]
         public double? ConfidenceScore { get; set; }
