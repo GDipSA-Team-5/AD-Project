@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ADWebApplication.Data.Repository;
 using ADWebApplication.Models.DTOs;
+using ADWebApplication.Services;
 
 namespace ADWebApplication.Controllers
 {
@@ -55,16 +56,20 @@ namespace ADWebApplication.Controllers
     //     }
     // }
 
+    [Route("AdminDashBoard")]
     [Authorize(Roles = "Admin")]
     public class AdminDashboardController : Controller
     {
         private readonly IDashboardRepository _dashboardRepository;
         private readonly ILogger<AdminDashboardController> _logger;
+        private readonly BinPredictionService _binPredictionService;
 
-        public AdminDashboardController(IDashboardRepository dashboardRepository, ILogger<AdminDashboardController> logger)
+
+        public AdminDashboardController(IDashboardRepository dashboardRepository, ILogger<AdminDashboardController> logger, BinPredictionService binPredictionService)
         {
             _dashboardRepository = dashboardRepository;
             _logger = logger;
+            _binPredictionService = binPredictionService;
         }
 
         /* public async Task<IActionResult> Index()
@@ -95,6 +100,8 @@ namespace ADWebApplication.Controllers
                 });
             }
         } */
+
+        [HttpGet("")]
         public async Task<IActionResult> Index()
         {
             try
@@ -113,27 +120,92 @@ namespace ADWebApplication.Controllers
                 var performance = await _dashboardRepository.GetAvgPerformanceMetricsAsync();
                 _logger.LogInformation("Performance retrieved: {Count} records", performance.Count);
         
-                var highRisk = await _dashboardRepository.GetHighRiskUnscheduledCountAsync();
-                _logger.LogInformation("High risk count: {Count}", highRisk);
+                // var highRisk = await _dashboardRepository.GetHighRiskUnscheduledCountAsync();
+                // _logger.LogInformation("High risk count: {Count}", highRisk);
+
+                var binCounts = await _dashboardRepository.GetBinCountsAsync();
+                _logger.LogInformation("Bin counts retrieved: {Active}/{Total}", binCounts.ActiveBins, binCounts.TotalBins);
         
+                var predictionVm = await _binPredictionService
+                    .BuildBinPredictionsPageAsync(
+                        page: 1,
+                        sort: "DaysToThreshold",
+                        sortDir: "asc",
+                        risk: "High",
+                        timeframe: "3"
+                    );
+
+                var highRisk = predictionVm.HighRiskUnscheduledCount;
+                var mlRefreshCount = predictionVm.NewCycleDetectedCount;
+
+                var alerts = new List<AdminAlertDto>();
+
+                if (highRisk > 0)
+                {
+                    alerts.Add(new AdminAlertDto
+                    {
+                        Type = "HighRisk",
+                        Title = "High overflow risk predicted",
+                        Message = $"{highRisk} bins are high-risk and not yet scheduled for collection",
+                        LinkText = "View Bin Predictions",
+                        LinkUrl = Url.Action("BinPredictions", "AdminDashboard")
+                    });
+                }
+
+                if (mlRefreshCount > 0)
+                {
+                    alerts.Add(new AdminAlertDto
+                    {
+                        Type = "MLRefresh",
+                        Title = "Predictions need refresh",
+                        Message = $"{mlRefreshCount} bins have new collection cycles detected",
+                        LinkText = "Refresh Predictions",
+                        LinkUrl = Url.Action("BinPredictions", "AdminDashboard")
+                    });
+                }
+
                 var viewModel = new AdminDashboardViewModel
                 {
                     KPIs = kpis,
                     CollectionTrends = trends,
                     CategoryBreakdowns = categories,
                     PerformanceMetrics = performance,
-                    HighRiskUnscheduledCount = highRisk
+                    HighRiskUnscheduledCount = highRisk,
+                    ActiveBinsCount = binCounts.ActiveBins,
+                    TotalBinsCount = binCounts.TotalBins,
+                    Alerts = alerts
                 };
+                
+                
+                viewModel.Alerts = alerts;
 
                 return View(viewModel);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving admin dashboard data.");
-                throw; // ← Change this to THROW instead of returning empty view
+                return View(new AdminDashboardViewModel
+                {
+                    KPIs = new DashboardKPIs(),
+                    CollectionTrends = new List<CollectionTrend>(),
+                    CategoryBreakdowns = new List<CategoryBreakdown>(),
+                    PerformanceMetrics = new List<AvgPerformance>(),
+                    HighRiskUnscheduledCount = 0,
+                    ActiveBinsCount = 0,
+                    TotalBinsCount = 0
+                });
             }
         }
+
+        [HttpGet("BinPredictions")]
+        public async Task<IActionResult> BinPredictions(int page = 1, string sort = "Days", string sortDir = "asc", string risk = "All", string timeframe = "All")
+        {
+            var viewModel = await _binPredictionService.BuildBinPredictionsPageAsync(page, sort, sortDir, risk, timeframe);
+
+            return View(viewModel);
+        }
+
+        
     }
 
 }
-
