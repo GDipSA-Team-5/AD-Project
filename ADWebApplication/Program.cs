@@ -74,7 +74,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 //ML Flask
 builder.Services.AddHttpClient<BinPredictionService>(client =>
 {
-    client.BaseAddress = new Uri("https://in5nite-ml-fdcycfe6gkfnhdg2.southeastasia-01.azurewebsites.net"); 
+    client.BaseAddress = new Uri("https://in5nite-ml-fdcycfe6gkfnhdg2.southeastasia-01.azurewebsites.net");
 });
 
 builder.Services.AddAuthorization();
@@ -156,7 +156,7 @@ using (var scope = app.Services.CreateScope())
 
     db.SaveChanges();
 }
-app.UseStaticFiles();   
+app.UseStaticFiles();
 app.UseRouting();
 app.UseCors("AllowAndroid");
 app.UseSession();
