@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ADWebApplication.Data.Repository
 {
-   public interface IAdminRepository
+    public interface IAdminRepository
     {
         Task<List<CollectionBin>> GetAllBinsAsync();
         Task<List<Employee>> GetAllCollectionOfficersAsync();
@@ -18,7 +18,7 @@ namespace ADWebApplication.Data.Repository
         Task UpdateBinAsync(CollectionBin bin);
         Task CreateBinAsync(CollectionBin bin);
     }
-   public class AdminRepository(DashboardDbContext dashboardDb, EmpDbContext empDb, In5niteDbContext infDb) : IAdminRepository
+    public class AdminRepository(DashboardDbContext dashboardDb, EmpDbContext empDb, In5niteDbContext infDb) : IAdminRepository
     {
         private readonly DashboardDbContext _dashboardDb = dashboardDb;
         private readonly EmpDbContext _empDb = empDb;
@@ -122,7 +122,7 @@ namespace ADWebApplication.Data.Repository
             return routeAssignments;
         }
 
-        public async Task<Employee>GetEmployeeByUsernameAsync(String username)
+        public async Task<Employee> GetEmployeeByUsernameAsync(String username)
         {
             var employee = await _empDb.Employees
                     .FirstAsync(e => e.Username == username);
@@ -133,7 +133,7 @@ namespace ADWebApplication.Data.Repository
         {
             // Get usernames that are BUSY in this range
             var busyUsernames = await _infDb.RoutePlans
-                .Where(rp => rp.PlannedDate >= from && rp.PlannedDate <= to)
+                .Where(rp => rp.PlannedDate.HasValue && rp.PlannedDate.Value >= from && rp.PlannedDate.Value <= to)
                 .Select(rp => rp.RouteAssignment!.AssignedTo)
                 .Distinct()
                 .ToListAsync();

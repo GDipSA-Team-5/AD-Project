@@ -13,6 +13,7 @@ public class BinPredictionsPageViewModel
     public double AvgDailyFillGrowthOverall =>
         Rows.Any() ? Rows.Average(r => r.PredictedNextAvgDailyGrowth) : 0;
     public int NewCycleDetectedCount { get; set; }
+    public int MissingPredictionCount { get; set; }
 
     // Banner
     public int HighRiskUnscheduledCount { get; set; }

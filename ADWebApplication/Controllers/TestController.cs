@@ -62,7 +62,7 @@ public class TestController : Controller
             {
                 message = "Test user already exists",
                 userId = existingUser.Id,
-                points = existingUser.RewardWallet.Points
+                points = existingUser.RewardWallet.AvailablePoints
             });
         }
 
@@ -76,7 +76,7 @@ public class TestController : Controller
             Password = "Test",
             RewardWallet = new RewardWallet
             {
-                Points = 0
+                AvailablePoints = 0
             }
         };
 
@@ -87,7 +87,7 @@ public class TestController : Controller
         {
             message = "Test user created successfully",
             userId = user.Id,
-            points = user.RewardWallet.Points
+            points = user.RewardWallet.AvailablePoints
         });
     }
 }
