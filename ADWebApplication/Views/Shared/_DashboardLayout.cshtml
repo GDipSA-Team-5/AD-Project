@@ -46,10 +46,18 @@
                 </a>
 
             <a class="dash-link" href="#"><i class="bi bi-diagram-3"></i> Route Planning</a>
-            <a class="dash-link" href="#"><i class="bi bi-inboxes"></i> Bin Management</a>
+            <a class="dash-link @(currentController == "Admin" && currentAction == "Bins" ? "active" : "")"
+                asp-controller="Admin" asp-action="Bins">
+                    <i class="bi bi-graph-up"></i>
+                    Bin Management
+                </a>
             <a class="dash-link" href="#"><i class="bi bi-gift"></i> Incentive & Rewards</a>
             <a class="dash-link" href="#"><i class="bi bi-clipboard-data"></i> Analysis & Report</a>
-            <a class="dash-link" href="#"><i class="bi bi-people"></i> Collection Officers</a>
+            <a class="dash-link @(currentController == "Admin" && currentAction != "Bins" ? "active" : "")"
+            asp-controller="Admin" asp-action="CollectionOfficerRoster">
+                <i class="bi bi-graph-up"></i>
+                Collection Officers
+            </a>
 
             <div class="dash-divider"></div>
 
