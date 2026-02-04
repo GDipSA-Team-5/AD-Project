@@ -9,6 +9,9 @@ namespace ADWebApplication.Services.Collector
     {
         private readonly In5niteDbContext _db;
 
+        // SonarQube: prevent potential Regex DoS by enforcing a match timeout
+        private static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(200);
+
         public CollectorIssueService(In5niteDbContext db)
         {
             _db = db;
@@ -101,18 +104,18 @@ namespace ADWebApplication.Services.Collector
             var stop = await _db.RouteStops
                 .Include(rs => rs.RoutePlan)
                     .ThenInclude(rp => rp.RouteAssignment)
-                .Where(rs => rs.BinId == model.BinId 
-                          && rs.RoutePlan != null 
-                          && rs.RoutePlan.RouteAssignment != null 
+                .Where(rs => rs.BinId == model.BinId
+                          && rs.RoutePlan != null
+                          && rs.RoutePlan.RouteAssignment != null
                           && rs.RoutePlan.RouteAssignment.AssignedTo == username
-                          && rs.RoutePlan.PlannedDate.HasValue 
+                          && rs.RoutePlan.PlannedDate.HasValue
                           && rs.RoutePlan.PlannedDate.Value.Date == today)
                 .FirstOrDefaultAsync();
 
             if (stop == null) return false;
 
             var newIssue = $"type: {model.IssueType}; severity: {model.Severity}; status: Open; description: {model.Description}";
-            
+
             if (string.IsNullOrWhiteSpace(stop.IssueLog))
                 stop.IssueLog = newIssue;
             else
@@ -189,19 +192,29 @@ namespace ADWebApplication.Services.Collector
             };
         }
 
+        // SonarQube: add timeout + escape the key to avoid ReDoS and pattern injection
         private static string? ExtractValue(string input, string key)
         {
+            var safeKey = System.Text.RegularExpressions.Regex.Escape(key);
+
             var match = System.Text.RegularExpressions.Regex.Match(
-                input,
-                $@"{key}\s*[:=]\s*([^;|\n]+)",
-                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                input ?? string.Empty,
+                $@"{safeKey}\s*[:=]\s*([^;|\n]+)",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase,
+                RegexTimeout);
+
             return match.Success ? match.Groups[1].Value.Trim() : null;
         }
 
+        // SonarQube: add timeout to Regex constructor
         private static string UpdateIssueLogStatus(string? input, string status)
         {
             var baseText = string.IsNullOrWhiteSpace(input) ? "" : input;
-            var regex = new System.Text.RegularExpressions.Regex(@"status\s*[:=]\s*([^;|\n]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+            var regex = new System.Text.RegularExpressions.Regex(
+                @"status\s*[:=]\s*([^;|\n]+)",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase,
+                RegexTimeout);
 
             if (regex.IsMatch(baseText))
             {
@@ -231,7 +244,6 @@ namespace ADWebApplication.Services.Collector
             if (lower.Contains("progress")) return "In Progress";
             return "Open";
         }
-
 
         #endregion
     }
