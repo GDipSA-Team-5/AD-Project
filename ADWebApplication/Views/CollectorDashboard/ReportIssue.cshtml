@@ -58,20 +58,20 @@
             </div>
             <div class="filter-field">
                 <label class="form-label">Status</label>
-                <select name="status" class="form-select">
+                <select asp-for="StatusFilter" name="status" class="form-select">
                     <option value="">All Statuses</option>
-                    <option value="Open" selected="@(Model.StatusFilter == "Open")">Open</option>
-                    <option value="In Progress" selected="@(Model.StatusFilter == "In Progress")">In Progress</option>
-                    <option value="Resolved" selected="@(Model.StatusFilter == "Resolved")">Resolved</option>
+                    <option value="Open">Open</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Resolved">Resolved</option>
                 </select>
             </div>
             <div class="filter-field">
                 <label class="form-label">Priority</label>
-                <select name="priority" class="form-select">
+                <select asp-for="PriorityFilter" name="priority" class="form-select">
                     <option value="">All Priorities</option>
-                    <option value="High" selected="@(Model.PriorityFilter == "High")">High</option>
-                    <option value="Medium" selected="@(Model.PriorityFilter == "Medium")">Medium</option>
-                    <option value="Low" selected="@(Model.PriorityFilter == "Low")">Low</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
                 </select>
             </div>
             <div class="filter-actions">

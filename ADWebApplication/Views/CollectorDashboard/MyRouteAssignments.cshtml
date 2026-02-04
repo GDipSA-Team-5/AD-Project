@@ -35,25 +35,21 @@
             </div>
             <div class="filter-field">
                 <label class="form-label">Region</label>
-                <select name="regionId" class="form-select">
+                <select asp-for="SelectedRegionId" name="regionId" class="form-select">
                     <option value="">All Regions</option>
                     @foreach (var region in Model.AvailableRegions)
                     {
-                        <option value="@region.RegionId" selected="@(region.RegionId == Model.SelectedRegionId)">
-                            @region.RegionName
-                        </option>
+                        <option value="@region.RegionId">@region.RegionName</option>
                     }
                 </select>
             </div>
             <div class="filter-field">
                 <label class="form-label">Status</label>
-                <select name="status" class="form-select">
+                <select asp-for="SelectedStatus" name="status" class="form-select">
                     <option value="">All Statuses</option>
                     @foreach (var status in Model.AvailableStatuses)
                     {
-                        <option value="@status" selected="@(status == Model.SelectedStatus)">
-                            @status
-                        </option>
+                        <option value="@status">@status</option>
                     }
                 </select>
             </div>

@@ -24,7 +24,7 @@
             <input type="hidden" asp-for="BinId" />
 
             <div class="modal-section">
-                <div class="section-label">Fill Level: <span id="fillLevelValue">@Model.BinFillLevel%</span></div>
+                <div class="section-label">Fill Level: <span id="fillLevelValue">@(Model.BinFillLevel)%</span></div>
                 <input asp-for="BinFillLevel" type="range" min="0" max="100" class="form-range" id="fillLevelRange" />
                 <span asp-validation-for="BinFillLevel" class="text-danger"></span>
             </div>

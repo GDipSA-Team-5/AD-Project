@@ -596,40 +596,86 @@
     color: #16a34a;
 }
 
-.issue-log .filter-card {
+/* Filter Panel Styles */
+.filter-card {
     background: #ffffff;
-    border-radius: 16px;
-    padding: 16px;
-    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
-    border: 1px solid #eef2f7;
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+    border: 1px solid #f1f5f9;
 }
 
-.issue-log .filter-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr auto;
-    gap: 16px;
-    align-items: end;
+.filter-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-end;
 }
 
-.issue-log .input-with-icon {
+.filter-field {
+    flex: 1;
+    min-width: 180px;
+}
+
+.filter-field .form-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #475569;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.filter-field .form-control,
+.filter-field .form-select {
+    border: 1px solid #f1f5f9;
+    background-color: #f8fafc;
+    border-radius: 12px;
+    padding: 11px 16px;
+    font-size: 14px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 46px;
+}
+
+.filter-field .form-control:focus,
+.filter-field .form-select:focus {
+    background-color: #ffffff;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+.input-with-icon {
     position: relative;
 }
 
-.issue-log .input-with-icon i {
+.input-with-icon i {
     position: absolute;
-    left: 12px;
+    left: 14px;
     top: 50%;
     transform: translateY(-50%);
     color: #94a3b8;
+    z-index: 5;
 }
 
-.issue-log .input-with-icon input {
-    padding-left: 38px;
+.input-with-icon .form-control {
+    padding-left: 42px !important;
 }
 
-.issue-log .filter-actions {
+.filter-actions {
     display: flex;
-    gap: 10px;
+    gap: 12px;
+    padding-bottom: 2px;
+}
+
+.filter-actions .btn {
+    height: 46px;
+    padding: 10px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .issue-log .issue-card {
