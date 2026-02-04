@@ -8,12 +8,8 @@ public class BinPredictionsTableViewModel
     public double PredictedNextAvgDailyGrowth { get; set; }
     public double EstimatedFillToday { get; set; }
     public int EstimatedDaysToThreshold { get; set; }
-    public bool AutoSelected => EstimatedDaysToThreshold <= 3;
-
-    public string RiskLevel =>
-        EstimatedDaysToThreshold <= 3 ? "High" :
-        EstimatedDaysToThreshold <= 7 ? "Medium" :
-        "Low";
+    public bool AutoSelected { get; set; }
+    public string RiskLevel { get; set; } = "";
 
     public string PlanningStatus { get; set; } = "Not Scheduled";
     public string? RouteId { get; set; }

@@ -62,10 +62,10 @@ namespace ADWebApplication.Controllers
     {
         private readonly IDashboardRepository _dashboardRepository;
         private readonly ILogger<AdminDashboardController> _logger;
-        private readonly BinPredictionService _binPredictionService;
+        private readonly IBinPredictionService _binPredictionService;
 
 
-        public AdminDashboardController(IDashboardRepository dashboardRepository, ILogger<AdminDashboardController> logger, BinPredictionService binPredictionService)
+        public AdminDashboardController(IDashboardRepository dashboardRepository, ILogger<AdminDashboardController> logger, IBinPredictionService binPredictionService)
         {
             _dashboardRepository = dashboardRepository;
             _logger = logger;
@@ -107,25 +107,25 @@ namespace ADWebApplication.Controllers
             try
             {
                 _logger.LogInformation("Starting dashboard data retrieval...");
-        
+
                 var kpis = await _dashboardRepository.GetAdminDashboardAsync();
                 _logger.LogInformation("KPIs retrieved: {Users} users", kpis.TotalUsers);
-        
+
                 var trends = await _dashboardRepository.GetCollectionTrendsAsync();
                 _logger.LogInformation("Trends retrieved: {Count} records", trends.Count);
-        
+
                 var categories = await _dashboardRepository.GetCategoryBreakdownAsync();
                 _logger.LogInformation("Categories retrieved: {Count} records", categories.Count);
-        
+
                 var performance = await _dashboardRepository.GetAvgPerformanceMetricsAsync();
                 _logger.LogInformation("Performance retrieved: {Count} records", performance.Count);
-        
+
                 // var highRisk = await _dashboardRepository.GetHighRiskUnscheduledCountAsync();
                 // _logger.LogInformation("High risk count: {Count}", highRisk);
 
                 var binCounts = await _dashboardRepository.GetBinCountsAsync();
                 _logger.LogInformation("Bin counts retrieved: {Active}/{Total}", binCounts.ActiveBins, binCounts.TotalBins);
-        
+
                 var predictionVm = await _binPredictionService
                     .BuildBinPredictionsPageAsync(
                         page: 1,
@@ -148,7 +148,7 @@ namespace ADWebApplication.Controllers
                         Title = "High overflow risk predicted",
                         Message = $"{highRisk} bins are high-risk and not yet scheduled for collection",
                         LinkText = "View Bin Predictions",
-                        LinkUrl = Url.Action("Index", "BinPredictions") ?? ""
+                        LinkUrl = Url.Action("Index", "AdminBinPredictions") ?? ""
                     });
                 }
 
@@ -157,10 +157,10 @@ namespace ADWebApplication.Controllers
                     alerts.Add(new AdminAlertDto
                     {
                         Type = "MLRefresh",
-                        Title = "Predictions need refresh",
+                        Title = "Bin Predictions need refresh",
                         Message = $"{mlRefreshCount} bins have new collection cycles detected",
                         LinkText = "Refresh Predictions",
-                        LinkUrl = Url.Action("Index", "BinPredictions") ?? ""
+                        LinkUrl = Url.Action("Index", "AdminBinPredictions") ?? ""
                     });
                 }
 
@@ -175,8 +175,8 @@ namespace ADWebApplication.Controllers
                     TotalBinsCount = binCounts.TotalBins,
                     Alerts = alerts
                 };
-                
-                
+
+
                 viewModel.Alerts = alerts;
 
                 return View(viewModel);
@@ -197,7 +197,7 @@ namespace ADWebApplication.Controllers
             }
         }
 
-        
+
     }
 
 }
