@@ -20,12 +20,8 @@ namespace ADWebApplication.Data.Repository
         Task<List<CollectionOfficerDto>> GetAvailableCollectionOfficersCalendarAsync(DateTime from, DateTime to);
         Task<List<AssignedCollectionOfficerDto>> GetAssignedCollectionOfficersCalendarAsync(DateTime from, DateTime to);
     }
-<<<<<<< HEAD
 
    public class AdminRepository(DashboardDbContext dashboardDb, EmpDbContext empDb, In5niteDbContext infDb) : IAdminRepository
-=======
-    public class AdminRepository(DashboardDbContext dashboardDb, EmpDbContext empDb, In5niteDbContext infDb) : IAdminRepository
->>>>>>> d447b27a6afaccf07a0e167fb2854e02581c8f55
     {
         private readonly DashboardDbContext _dashboardDb = dashboardDb;
         private readonly EmpDbContext _empDb = empDb;
@@ -235,54 +231,58 @@ namespace ADWebApplication.Data.Repository
                 .ToListAsync();
         }
 
-    public async Task<List<AssignedCollectionOfficerDto>>GetAssignedCollectionOfficersCalendarAsync(DateTime from, DateTime to)
+    public async Task<List<AssignedCollectionOfficerDto>> GetAssignedCollectionOfficersCalendarAsync(DateTime from, DateTime to)
     {
-        // Normalize date range
         var fromDate = from.Date;
-        var toDate   = to.Date;
+        var toDate = to.Date;
 
-        // Get BUSY routes in range (debug-friendly)
+        // Get all busy routes in range
         var busyDebug = await _infDb.RoutePlans
-            .Where(rp =>
-                rp.PlannedDate.HasValue &&
-                rp.RouteAssignment != null &&
-                rp.PlannedDate.Value.Date >= fromDate &&
-                rp.PlannedDate.Value.Date <= toDate)
-            .Select(rp => new
-            {
-                Username = rp.RouteAssignment!.AssignedTo.Trim().ToUpper(),
-                PlannedDate = rp.PlannedDate.Value.Date
-            })
-            .ToListAsync();
+        .Where(rp =>
+            rp.PlannedDate.HasValue &&
+            rp.RouteAssignment != null &&
+            rp.PlannedDate.Value.Date >= fromDate &&
+            rp.PlannedDate.Value.Date <= toDate)
+        .Select(rp => new
+        {
+            Username = rp.RouteAssignment!.AssignedTo.Trim().ToUpper(),
+            PlannedDate = rp.PlannedDate.Value.Date,
+            RouteId = rp.RouteId
+        })
+        .ToListAsync();
 
-        // Group by username
+        // Group busy routes by username as CollectionOfficerPlannedRouteDto
         var grouped = busyDebug
-            .GroupBy(x => x.Username)
-            .ToList();
-
-        // Join with Employee table
-        var result = await _empDb.Employees
-            .AsNoTracking()
-            .Where(e =>
-                e.IsActive &&
-                e.Username.StartsWith("CO-") &&
-                grouped.Select(g => g.Key)
-                        .Contains(e.Username.Trim().ToUpper()))
-            .OrderBy(e => e.Username)
-            .Select(e => new AssignedCollectionOfficerDto
+        .GroupBy(x => x.Username)
+        .ToDictionary(
+            g => g.Key,
+            g => g.Select(x => new CollectionOfficerPlannedRouteDto
             {
-                Username = e.Username,
-                FullName = e.FullName,
-                PlannedDates = grouped
-                    .First(g => g.Key == e.Username.Trim().ToUpper())
-                    .Select(x => x.PlannedDate)
-                    .ToList()
-            })
+                RouteId = x.RouteId,
+                PlannedDate = x.PlannedDate
+            }).ToList()
+        );
+
+        // Fetch all employees that are in grouped keys
+        var usernames = grouped.Keys.ToList();
+
+        var employees = await _empDb.Employees
+            .AsNoTracking()
+            .Where(e => e.IsActive && e.Username.StartsWith("CO-") 
+                        && usernames.Contains(e.Username.Trim().ToUpper()))
+            .OrderBy(e => e.Username)
             .ToListAsync();
+
+        //  Map to AssignedCollectionOfficerDto
+        var result = employees.Select(e => new AssignedCollectionOfficerDto
+        {
+            Username = e.Username,
+            FullName = e.FullName,
+            PlannedDates = grouped[e.Username.Trim().ToUpper()]
+        }).ToList();
 
         return result;
     }
-
     
     }
 }

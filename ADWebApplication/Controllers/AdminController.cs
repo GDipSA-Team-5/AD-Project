@@ -150,17 +150,13 @@ namespace ADWebApplication.Controllers
         [HttpGet]
         public async Task<IActionResult> GetOfficerAvailability(DateTime from, DateTime to)
         {
-            var officers = await _adminRepository.GetAvailableCollectionOfficersCalendarAsync(from, to);
-            return Json(officers);
-        }
+            var available = await _adminRepository
+                .GetAvailableCollectionOfficersCalendarAsync(from, to);
 
-        [HttpGet]
-        public async Task<IActionResult> GetAssignedCollectionOfficersCalendar(DateTime from, DateTime to)
-        {
-            var officers = await _adminRepository
+            var assigned = await _adminRepository
                 .GetAssignedCollectionOfficersCalendarAsync(from, to);
 
-            return Json(officers);
+            return Json(new { available, assigned });
         }
 
 
