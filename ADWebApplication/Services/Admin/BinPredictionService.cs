@@ -68,63 +68,6 @@ public class BinPredictionService : IBinPredictionService
             .ToDictionary(p => p.BinId, p => p);
     }
 
-    //create row in ViewModel
-    private static BinPredictionsTableViewModel? BuildRow(CollectionBin bin, CollectionDetails latest, FillLevelPrediction? latestPrediction, RouteStop? nextStop, DateTimeOffset today)
-    {
-        if (latestPrediction == null ||
-            latest.CycleDurationDays == null ||
-            latest.CycleStartMonth == null ||
-            latest.CurrentCollectionDateTime == null)
-            return null;
-
-        double predictedGrowth = latestPrediction.PredictedAvgDailyGrowth;
-
-        // Count no. of days since last collection
-        var daysElapsed = Math.Max((today - latest.CurrentCollectionDateTime.Value).TotalDays, 0);
-
-        // Bin fill % starts from 0 after collection
-        var estimatedFillToday = Math.Clamp(predictedGrowth * daysElapsed, 0, 100);
-
-        // Count no. of days left to threshold 80%
-        int daysTo80;
-        if (estimatedFillToday >= 80)
-        {
-            daysTo80 = 0;
-        }
-        else
-        {
-             var remaining = 80 - estimatedFillToday;
-             daysTo80 = (int)Math.Ceiling(remaining / predictedGrowth);
-        }
-
-        // A bin is considered scheduled if a planned collection exists and the planned date is after the last collection and not in the past
-        bool isScheduled =
-            nextStop?.PlannedCollectionTime >= today &&
-            nextStop.PlannedCollectionTime > latest.CurrentCollectionDateTime;
-
-        var planningStatus = isScheduled ? "Scheduled" : "Not Scheduled";
-        var riskLevel = GetRiskLevel(daysTo80);
-
-        return new BinPredictionsTableViewModel
-        {
-            BinId = bin.BinId,
-            Region = bin.Region?.RegionName,
-            LastCollectionDateTime = latest.CurrentCollectionDateTime.Value,
-
-            PredictedNextAvgDailyGrowth = predictedGrowth,
-            EstimatedFillToday = estimatedFillToday,
-            EstimatedDaysToThreshold = daysTo80,
-            RiskLevel = riskLevel,
-            PlanningStatus = planningStatus,
-
-            // A bin is autoSelected if it is high risk and unscheduled
-            AutoSelected = riskLevel == "High" && !isScheduled,
-            RouteId = isScheduled && nextStop?.RouteId != null
-                ? nextStop.RouteId.Value.ToString()
-                : null
-        };
-    }
-
     public async Task<BinPredictionsPageViewModel> BuildBinPredictionsPageAsync(int page, string sort, string sortDir, string risk, string timeframe)
     {
         int pageSize = 10;
@@ -156,7 +99,7 @@ public class BinPredictionService : IBinPredictionService
 
         foreach (var bin in bins)
         {
-            // Retrieve latest collection record of each bin and store in var latest
+            // Retrieve latest collection record
             if (!latestCollectionByBin.TryGetValue(bin.BinId, out var latest))
                 continue;
 
@@ -169,9 +112,63 @@ public class BinPredictionService : IBinPredictionService
                 continue;
             }
 
-            var row = BuildRow(bin, latest, latestPrediction, nextStop, today);
-            if (row != null)
-                rows.Add(row);
+            if (latestPrediction == null ||
+                latest.CycleDurationDays == null ||
+                latest.CycleStartMonth == null ||
+                latest.CurrentCollectionDateTime == null)
+            {
+                missingPredictionCount++;
+                continue;
+            }
+
+            double predictedGrowth = latestPrediction.PredictedAvgDailyGrowth;
+
+            // Count no. of days since last collection
+            var daysElapsed = Math.Max((today - latest.CurrentCollectionDateTime.Value).TotalDays, 0);
+
+            // Bin fill % starts from 0 after collection
+            var estimatedFillToday = Math.Clamp(predictedGrowth * daysElapsed, 0, 100);
+
+            // Count no. of days left to threshold 80%
+            int daysTo80;
+            if (estimatedFillToday >= 80)
+            {
+                daysTo80 = 0;
+            }
+            else
+            {
+                var remaining = 80 - estimatedFillToday;
+                daysTo80 = (int)Math.Ceiling(remaining / predictedGrowth);
+            }
+
+            // A bin is considered scheduled if a planned collection exists
+            bool isScheduled =
+                nextStop?.PlannedCollectionTime >= today &&
+                nextStop.PlannedCollectionTime > latest.CurrentCollectionDateTime;
+
+            var planningStatus = isScheduled ? "Scheduled" : "Not Scheduled";
+            var riskLevel = GetRiskLevel(daysTo80);
+
+            // Auto-select if high risk and unscheduled
+            var autoSelected = riskLevel == "High" && !isScheduled;
+
+            rows.Add(new BinPredictionsTableViewModel
+            {
+                BinId = bin.BinId,
+                Region = bin.Region?.RegionName,
+                LastCollectionDateTime = latest.CurrentCollectionDateTime.Value,
+
+                PredictedNextAvgDailyGrowth = predictedGrowth,
+                EstimatedFillToday = estimatedFillToday,
+                EstimatedDaysToThreshold = daysTo80,
+                RiskLevel = riskLevel,
+                PlanningStatus = planningStatus,
+
+                AutoSelected = autoSelected,
+                RouteId = isScheduled && nextStop?.RouteId != null
+                    ? nextStop.RouteId.Value.ToString()
+                    : null
+            });
 
         }
 
