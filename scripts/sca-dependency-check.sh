@@ -2,7 +2,7 @@
 set -e
 
 # Run OWASP Dependency-Check
-dependency-check.sh \
+dependency-check \
   --project ADWebApplication \
   --scan . \
   --format ALL \
