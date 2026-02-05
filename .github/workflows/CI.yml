@@ -16,8 +16,8 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Install SonarScanner
-        run: dotnet tool install --global dotnet-sonarscanner
+      - name: Make scripts executable
+        run: chmod +x ./scripts/*.sh
 
       - name: Build
         run: ./scripts/build.sh
@@ -35,3 +35,4 @@ jobs:
 
       - name: Local DAST Scan
         run: ./scripts/dast-zap.sh
+
