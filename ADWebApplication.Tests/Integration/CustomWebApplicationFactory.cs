@@ -24,9 +24,6 @@ namespace ADWebApplication.Tests.Integration
                 var sp = services.BuildServiceProvider();
                 using var scope = sp.CreateScope();
                 scope.ServiceProvider.GetRequiredService<In5niteDbContext>().Database.EnsureCreated();
-                scope.ServiceProvider.GetRequiredService<EmpDbContext>().Database.EnsureCreated();
-                scope.ServiceProvider.GetRequiredService<LogDisposalDbContext>().Database.EnsureCreated();
-                scope.ServiceProvider.GetRequiredService<DashboardDbContext>().Database.EnsureCreated();
             });
         }
 
