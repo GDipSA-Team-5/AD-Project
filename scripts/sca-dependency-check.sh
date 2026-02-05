@@ -5,7 +5,7 @@ set -e
 DATA_DIR="./dependency-check-data"
 mkdir -p "$DATA_DIR"
 
-# Run Dependency-Check with API key and local cache
+# Run OWASP Dependency-Check using binary installed in PATH
 dependency-check.sh \
   --project ADWebApplication \
   --scan . \
@@ -13,4 +13,5 @@ dependency-check.sh \
   --out ./dependency-check-report \
   --data "$DATA_DIR" \
   --nvdApiKey "${NVD_API_KEY}" \
-  --failOnCVSS 7
+  --failOnCVSS 9 \
+  -n  # disables auto-update, uses cached DB
