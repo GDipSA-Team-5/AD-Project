@@ -32,6 +32,8 @@ jobs:
         run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
       - name: Run Sonar Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: ./scripts/sast-sonar.sh
 
       - name: Upload Sonar Artifacts
