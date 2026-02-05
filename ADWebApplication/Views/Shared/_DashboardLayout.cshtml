@@ -49,7 +49,11 @@
 
                 <a class="dash-link" href="#"><i class="bi bi-diagram-3"></i> Route Planning</a>
                 <a class="dash-link" href="#"><i class="bi bi-inboxes"></i> Bin Management</a>
-                <a class="dash-link" href="#"><i class="bi bi-gift"></i> Incentive & Rewards</a>
+                <a class="dash-link @(currentController == "Campaign" ? "active" : "")" 
+                asp-controller="Campaign" asp-action="Index">
+                <i class="bi bi-gift"></i> 
+                Incentive & Rewards
+                </a>
                 <a class="dash-link" href="#"><i class="bi bi-clipboard-data"></i> Analysis & Report</a>
                 <a class="dash-link" href="#"><i class="bi bi-people"></i> Collection Officers</a>
 

@@ -16,6 +16,8 @@ namespace ADWebApplication.Data
         public DbSet<Region> Regions => Set<Region>();
         public DbSet<FillLevelPrediction> FillLevelPredictions => Set<FillLevelPrediction>();
 
+        //Campaigns
+        public DbSet<Campaign> Campaigns => Set<Campaign>();
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<PublicUser>()
@@ -41,6 +43,47 @@ namespace ADWebApplication.Data
                 .HasOne(b => b.Region)
                 .WithMany()
                 .HasForeignKey(b => b.RegionId);
+
+            modelBuilder.Entity<Campaign>(entity =>
+            {
+                entity.ToTable("campaign");
+                entity.HasKey(c => c.CampaignId);
+                entity.Property(e => e.CampaignId)
+                    .HasColumnName("campaignId")
+                    .ValueGeneratedOnAdd();
+
+                entity.Property(e => e.CampaignName)
+                    .HasColumnName("campaignName")
+                    .IsRequired();
+
+                entity.Property(e => e.StartDate)
+                    .HasColumnName("startDate")
+                    .IsRequired();
+
+                entity.Property(e => e.EndDate)
+                    .HasColumnName("endDate")
+                    .IsRequired();
+
+                entity.Property(e => e.IncentiveType)
+                    .HasColumnName("incentiveType")
+                    .IsRequired();
+
+                entity.Property(e => e.IncentiveValue)
+                    .HasColumnName("incentiveValue")
+                    .IsRequired();
+
+                entity.Property(e => e.Status)
+                    .HasColumnName("status")
+                    .IsRequired();
+
+                entity.Property(e => e.Description)
+                    .HasColumnName("description");
+
+                // Indexes
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => new { e.StartDate, e.EndDate });
+            });
+
         }
     }
 }

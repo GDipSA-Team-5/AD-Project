@@ -46,6 +46,7 @@ builder.Services.AddDbContext<DashboardDbContext>(options =>
     )
 );
 
+
 // Admin Repisitory - Andrew
 builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 
@@ -78,6 +79,10 @@ builder.Services.AddHttpClient<BinPredictionService>(client =>
 });
 
 builder.Services.AddScoped<IBinPredictionService, BinPredictionService>();
+
+//Campaign Service
+builder.Services.AddScoped<ICampaignService, CampaignService>();
+builder.Services.AddScoped<ICampaignRepository, CampaignRepository>();
 
 builder.Services.AddAuthorization();
 
