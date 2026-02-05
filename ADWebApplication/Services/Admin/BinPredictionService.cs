@@ -87,16 +87,7 @@ public class BinPredictionService : IBinPredictionService
         int pageSize = 10;
         var today = DateTimeOffset.UtcNow.Date;
 
-<<<<<<< HEAD:ADWebApplication/Services/BinPredictionService.cs
-        // risk = string.IsNullOrWhiteSpace(risk) ? "All" : risk;
-        // timeframe = string.IsNullOrWhiteSpace(timeframe) ? "All" : timeframe;
-        // sort = string.IsNullOrWhiteSpace(sort) ? "DaysToThreshold" : sort;
-        // sortDir = string.IsNullOrWhiteSpace(sortDir) ? "asc" : sortDir;
-
-        var latestCollectionByBin = await GetLatestCollectionsAsync();
-=======
         var collectionHistoryByBin = await GetCollectionHistoryAsync();
->>>>>>> origin/main:ADWebApplication/Services/Admin/BinPredictionService.cs
         var latestPredictionByBin = await GetLatestPredictionsAsync();
 
         var bins = await db.CollectionBins
@@ -201,19 +192,6 @@ public class BinPredictionService : IBinPredictionService
                 daysTo80 = (int)Math.Ceiling(remaining / predictedGrowth);
             }
 
-<<<<<<< HEAD:ADWebApplication/Services/BinPredictionService.cs
-            // Bins are auto-selected as urgent if it is predicted to reach 80% the next day
-            bool autoSelected = daysTo80 <= 1;
-            
-            // Retrieve next scheduled route stop of each bin if any
-            nextStopByBin.TryGetValue(bin.BinId, out var nextStop);
-
-            var lastCollectedAt = latest.CurrentCollectionDateTime;
-            var nextPlannedAt = nextStop?.PlannedCollectionTime;
-
-            // A bin is considered scheduled if a planned collection exists and the planned date is after the last collection and not in the past
-=======
->>>>>>> origin/main:ADWebApplication/Services/Admin/BinPredictionService.cs
             bool isScheduled =
                 nextStop?.PlannedCollectionTime >= today &&
                 nextStop.PlannedCollectionTime > latestCollectedAt;
@@ -319,11 +297,7 @@ public class BinPredictionService : IBinPredictionService
             page = Math.Clamp(page, 1, totalPages);
         }
         
-<<<<<<< HEAD:ADWebApplication/Services/BinPredictionService.cs
-        var pagedRows = query
-=======
         var pagedRows = orderedQuery
->>>>>>> origin/main:ADWebApplication/Services/Admin/BinPredictionService.cs
             .Skip((page - 1) * pageSize) //skip  rows belonging to the prev. page
             .Take(pageSize) //limit no. of rows displayed to 10
             .ToList();
@@ -332,12 +306,8 @@ public class BinPredictionService : IBinPredictionService
         {
             Rows = pagedRows,
             TotalBins = bins.Count,
-<<<<<<< HEAD:ADWebApplication/Services/BinPredictionService.cs
-            HighPriorityBins = query.Count(r => r.EstimatedDaysToThreshold <= 1),
-=======
             HighPriorityBins = rows.Count(r => r.EstimatedDaysToThreshold <= 1),
             AvgDailyFillGrowthOverall = avgGrowth,
->>>>>>> origin/main:ADWebApplication/Services/Admin/BinPredictionService.cs
 
             SelectedRisk = risk,
             SelectedTimeframe = timeframe,
