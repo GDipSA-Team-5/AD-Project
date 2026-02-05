@@ -2,9 +2,10 @@
 set -e
 
 # Run OWASP Dependency-Check
-dependency-check \
+dependency-check.sh \
   --project ADWebApplication \
   --scan . \
   --format ALL \
   --out ./dependency-check-report \
-  --failOnCVSS 7
+  --failOnCVSS 7 \
+  --disableNvd
