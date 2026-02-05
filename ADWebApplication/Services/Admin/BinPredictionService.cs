@@ -395,17 +395,25 @@ public class BinPredictionService : IBinPredictionService
     {
         var today = DateTimeOffset.UtcNow.Date;
 
-        var latestCollectionByBin = await GetLatestCollectionsAsync();
+        var collectionHistoryByBin = await GetCollectionHistoryAsync();
         var latestPredictionByBin = await GetLatestPredictionsAsync();
 
         var result = new List<BinPriorityDto>();
 
-        foreach (var (binId, latest) in latestCollectionByBin)
+        foreach (var (binId, history) in collectionHistoryByBin)
         {
+            if (history.Count == 0)
+            continue;
+
+            var latest = history[0];
+
             if (!latestPredictionByBin.TryGetValue(binId, out var prediction))
             continue;
 
-            if(latest.CurrentCollectionDateTime == null)
+            if(latest.CurrentCollectionDateTime.HasValue)
+            continue;
+
+            if (prediction.PredictedAvgDailyGrowth <= 0)
             continue;
 
             var daysElapsed = Math.Max(

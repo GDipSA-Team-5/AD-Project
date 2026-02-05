@@ -9,9 +9,9 @@ namespace ADWebApplication.Services
     public class RoutePlanningService
     {
         private readonly In5niteDbContext _db;
-        private readonly BinPredictionService _binPredictionService;
+        private readonly IBinPredictionService _binPredictionService;
 
-        public RoutePlanningService(In5niteDbContext context, BinPredictionService binPredictionService)
+        public RoutePlanningService(In5niteDbContext context, IBinPredictionService binPredictionService)
         {
             _db = context;
             _binPredictionService = binPredictionService;
