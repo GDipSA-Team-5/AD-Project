@@ -35,6 +35,13 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: ./scripts/sast-sonar.sh
+      
+      - name: Install OWASP Dependency-Check CLI
+        run: |
+          wget https://github.com/jeremylong/DependencyCheck/releases/download/v8.5.1/dependency-check-8.5.1-release.zip
+          unzip dependency-check-8.5.1-release.zip
+          chmod +x dependency-check/bin/dependency-check.sh
+          sudo mv dependency-check/bin/dependency-check.sh /usr/local/bin/dependency-check.sh
 
       - name: Dependency Check
         run: ./scripts/sca-dependency-check.sh
@@ -42,3 +49,21 @@ jobs:
       - name: Local DAST Scan
         run: ./scripts/dast-zap.sh
 
+      # Artifact uploads
+      - name: Upload Test Coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-coverage
+          path: ADWebApplication.Tests/TestResults/**/coverage.cobertura.xml
+
+      - name: Upload Dependency Check Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: ./dependency-check-report
+
+      - name: Upload ZAP DAST Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report
+          path: ./zap-report
