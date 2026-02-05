@@ -1,10 +1,10 @@
 name: CI
 
 on:
-  pull_request:          # Run CI check on Pull Requests
+  pull_request:
   push:
-    branches: [ main ]   # Run CI check on main pushes
-  workflow_dispatch:     # Run CI check on manual trigger
+    branches: [ main ]
+  workflow_dispatch:
 
 env:
   DEPENDENCY_CHECK_VERSION: v9.0.7
@@ -49,9 +49,7 @@ jobs:
           wget https://github.com/jeremylong/DependencyCheck/releases/download/${VERSION}/dependency-check-${VERSION#v}-release.zip
           unzip dependency-check-*.zip
           chmod +x dependency-check/bin/dependency-check.sh
-          # Move to a stable location
           sudo mv dependency-check /usr/local/dependency-check
-          # Add binary folder to PATH for the remaining steps
           echo "/usr/local/dependency-check/bin" >> $GITHUB_PATH
 
       - name: Cache Dependency-Check DB
@@ -73,5 +71,3 @@ jobs:
         with:
           name: dependency-check-report
           path: ./dependency-check-report
-
-
