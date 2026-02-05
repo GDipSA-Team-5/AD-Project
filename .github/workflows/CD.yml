@@ -55,4 +55,11 @@ jobs:
           cmd_options: >
             -J report_json.json
             -r report_html.html
-          allow_issue_writing: false
+          allow_issue_writing: falses
+
+      - name: Upload ZAP DAST Report
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-live-report
+          path: ./zap-live-report
