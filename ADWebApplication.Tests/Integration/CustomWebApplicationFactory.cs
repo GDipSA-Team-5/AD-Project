@@ -17,16 +17,10 @@ namespace ADWebApplication.Tests.Integration
             builder.ConfigureServices(services =>
             {
                 ReplaceDbContext<In5niteDbContext>(services);
-                ReplaceDbContext<EmpDbContext>(services);
-                ReplaceDbContext<LogDisposalDbContext>(services);
-                ReplaceDbContext<DashboardDbContext>(services);
 
                 var sp = services.BuildServiceProvider();
                 using var scope = sp.CreateScope();
                 scope.ServiceProvider.GetRequiredService<In5niteDbContext>().Database.EnsureCreated();
-                scope.ServiceProvider.GetRequiredService<EmpDbContext>().Database.EnsureCreated();
-                scope.ServiceProvider.GetRequiredService<LogDisposalDbContext>().Database.EnsureCreated();
-                scope.ServiceProvider.GetRequiredService<DashboardDbContext>().Database.EnsureCreated();
             });
         }
 

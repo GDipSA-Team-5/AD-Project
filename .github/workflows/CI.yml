@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  pull_request:          # Run CI check on Pull Requests
+  push:
+    branches: [ main ]   # Run CI check on main pushes
+  workflow_dispatch:     # Run CI check on manual trigger
+
+env:
+  DEPENDENCY_CHECK_VERSION: v9.0.7
+
+jobs:
+  build-and-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Make scripts executable
+        run: chmod +x ./scripts/*.sh
+
+      - name: Install SonarScanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: Add .NET global tools to PATH
+        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      - name: Run SonarCloud Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_ORG: ${{ secrets.SONAR_ORG }}
+        run: ./scripts/sast-sonar.sh
+        
+      - name: Upload Sonar Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonar-report
+          path: .sonarqube/out || echo "No artifacts to upload"
+
+      - name: Install OWASP Dependency-Check
+        run: |
+          VERSION=${DEPENDENCY_CHECK_VERSION}
+          wget https://github.com/jeremylong/DependencyCheck/releases/download/${VERSION}/dependency-check-${VERSION#v}-release.zip
+          unzip dependency-check-*.zip
+          chmod +x dependency-check/bin/dependency-check.sh
+          sudo mv dependency-check /usr/local/dependency-check
+          sudo ln -s /usr/local/dependency-check/bin/dependency-check.sh /usr/local/bin/dependency-check
+
+      - name: Run Dependency Check
+        run: ./scripts/sca-dependency-check.sh
+
+      - name: Upload Dependency Check Report
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: ./dependency-check-report
