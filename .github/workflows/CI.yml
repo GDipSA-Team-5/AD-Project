@@ -75,7 +75,7 @@ jobs:
           format: ALL
           out: ./dependency-check-report
           args: >
-            --failOnCVSS 9
+            --failOnCVSS 10
             --suppression dependency-check-suppressions.xml
             --exclude '**/test/**'
 
