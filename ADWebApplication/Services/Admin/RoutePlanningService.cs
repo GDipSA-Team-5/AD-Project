@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ADWebApplication.Services
 {
-    public class RoutePlanningService
+    public class RoutePlanningService : IRoutePlanningService
     {
         private readonly In5niteDbContext _db;
         private readonly IBinPredictionService _binPredictionService;
@@ -191,10 +191,10 @@ namespace ADWebApplication.Services
             {
                 RouteKey = r.RouteId,
                 BinId = rs.BinId,
-                Latitude = rs.CollectionBin!.Latitude.Value,
-                Longitude = rs.CollectionBin!.Longitude.Value,
+                Latitude = rs.CollectionBin!.Latitude!.Value,
+                Longitude = rs.CollectionBin!.Longitude!.Value,
                 StopNumber = rs.StopSequence,
-                AssignedOfficerName = r.RouteAssignment != null ? r.RouteAssignment.AssignedTo : null
+                AssignedOfficerName = r.RouteAssignment != null ? (r.RouteAssignment!.AssignedTo ?? "") : ""
             }))
             .ToListAsync();
     }
@@ -254,7 +254,7 @@ namespace ADWebApplication.Services
         {
             var optimizedRoute = new List<RoutePlanDto>();
 
-            //loop through 7 routes (routing.Vehicles() method from OR-tools)
+            //loop through 3 routes (routing.Vehicles() method from OR-tools)
             for (int i = 0; i < routing.Vehicles(); ++i)
             {
 

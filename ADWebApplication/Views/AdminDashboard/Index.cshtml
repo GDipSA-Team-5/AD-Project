@@ -295,9 +295,9 @@
             });
 
             // Category Distribution Chart
-            const categoryLabels = @Html.Raw(JsonSerializer.Serialize(Model.CategoryBreakdowns.Select(c => c.Category)));
-            const categoryValues = @Html.Raw(JsonSerializer.Serialize(Model.CategoryBreakdowns.Select(c => c.Value)));
-            const categoryColorsRaw = @Html.Raw(JsonSerializer.Serialize(Model.CategoryBreakdowns.Select(c => c.Color)));
+            const categoryLabels = @Html.Raw(JsonSerializer.Serialize(Model.CategoryBreakdowns!.Select(c => c.Category)));
+            const categoryValues = @Html.Raw(JsonSerializer.Serialize(Model.CategoryBreakdowns!.Select(c => c.Value)));
+            const categoryColorsRaw = @Html.Raw(JsonSerializer.Serialize(Model.CategoryBreakdowns!.Select(c => c.Color)));
             const categoryPalette = ['#0ea5e9', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#14b8a6', '#f97316', '#6366f1'];
             const categoryColors = categoryColorsRaw.map((c, i) => c || categoryPalette[i % categoryPalette.length]);
             const categoryCtx = document.getElementById('categoryChart').getContext('2d');

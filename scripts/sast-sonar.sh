@@ -17,6 +17,7 @@ dotnet build ./AD-Project.sln
 # Run tests and collect coverage
 dotnet test ./ADWebApplication.Tests/ADWebApplication.Tests.csproj \
   --collect:"XPlat Code Coverage" \
+  --settings coverlet.runsettings \
   --results-directory ./TestResults
 
 # Convert coverage to Cobertura format for SonarCloud
