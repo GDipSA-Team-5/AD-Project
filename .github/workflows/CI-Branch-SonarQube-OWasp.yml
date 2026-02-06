@@ -45,8 +45,8 @@ jobs:
             /k:"GDipSA-Team-5_AD-Project" \
             /o:"gdipsa-team-5" \
             /d:sonar.host.url="https://sonarcloud.io" \
-            /d:sonar.cs.cobertura.reportsPaths="**/coverage.cobertura.xml" \
-            /d:sonar.coverage.exclusions="**/Program.cs"
+            /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" \
+            /d:sonar.coverage.exclusions="**/Program.cs,**/Migrations/**"
 
       # ---- Restore & Build main project ----
       - name: Restore Main Project
@@ -68,7 +68,7 @@ jobs:
             --results-directory ./TestResults
 
       - name: Debug coverage files
-        run: find . -name "coverage.cobertura.xml"
+        run: find . -name "coverage.opencover.xml"
 
       # ---- SonarCloud End ----
       - name: SonarCloud End
@@ -91,7 +91,7 @@ jobs:
           name: sonarcloud-artifacts
           path: |
             .sonarqube/out
-            coverage/coverage.opencover.xml
+            TestResults/**/coverage.opencover.xml
 
       # ---- OWASP Dependency-Check ----
       - name: Run OWASP Dependency-Check SCA
