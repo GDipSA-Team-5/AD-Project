@@ -7,5 +7,7 @@ namespace ADWebApplication.Services
         Task<BinPredictionsPageViewModel> BuildBinPredictionsPageAsync(int page, string sort, string sortDir, string risk, string timeframe);
 
         Task<int> RefreshPredictionsForNewCyclesAsync();
+
+        Task<List<BinPriorityDto>> GetBinPrioritiesAsync();
     }
 }

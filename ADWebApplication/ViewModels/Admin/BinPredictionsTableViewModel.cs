@@ -10,7 +10,6 @@ public class BinPredictionsTableViewModel
     public int? EstimatedDaysToThreshold { get; set; }
     public bool AutoSelected { get; set; }
     public string? RiskLevel { get; set; } = "";
-
     public string PlanningStatus { get; set; } = "Not Scheduled";
     public string? RouteId { get; set; }
     public bool IsNewCycleDetected { get; set; }

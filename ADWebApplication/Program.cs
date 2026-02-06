@@ -15,10 +15,13 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
+builder.Services.AddScoped<RoutePlanningService>();
 builder.Services.AddScoped<ICollectorService, CollectorService>();
 builder.Services.AddScoped<ICollectorDashboardService, CollectorDashboardService>();
 builder.Services.AddScoped<ICollectorAssignmentService, CollectorAssignmentService>();
 builder.Services.AddScoped<ICollectorIssueService, CollectorIssueService>();
+builder.Services.AddScoped<IRouteAssignmentService, RouteAssignmentService>();
+
 
 
 builder.Services.AddDbContext<In5niteDbContext>(options =>

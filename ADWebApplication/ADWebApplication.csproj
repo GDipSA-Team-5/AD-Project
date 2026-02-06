@@ -26,6 +26,7 @@
     <PackageReference Include="MySqlConnector" Version="2.5.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
+    <PackageReference Include="Google.OrTools" Version="9.15.6755" />
   </ItemGroup>
 
 </Project>
