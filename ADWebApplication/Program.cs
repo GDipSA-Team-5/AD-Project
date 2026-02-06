@@ -64,7 +64,6 @@ builder.Services.AddHttpClient<IBinPredictionService, BinPredictionService>(clie
     client.BaseAddress = new Uri("https://in5nite-ml-fdcycfe6gkfnhdg2.southeastasia-01.azurewebsites.net");
 });
 
-builder.Services.AddScoped<IBinPredictionService, BinPredictionService>();
 
 //Campaign Service
 builder.Services.AddScoped<ICampaignService, CampaignService>();
