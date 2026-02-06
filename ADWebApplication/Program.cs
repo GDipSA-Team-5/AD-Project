@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using ADWebApplication.Data.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
+var googleKey = builder.Configuration["GOOGLE_MAPS_API_KEY"];
 
 builder.Services.AddControllers();
 builder.Services.AddControllersWithViews();
@@ -30,6 +31,8 @@ builder.Services.AddDbContext<In5niteDbContext>(options =>
         new MySqlServerVersion(new Version(8, 0, 36))
     )
 );
+
+
 
 // Admin Repisitory - Andrew
 builder.Services.AddScoped<IAdminRepository, AdminRepository>();
@@ -61,6 +64,15 @@ builder.Services.AddHttpClient<IBinPredictionService, BinPredictionService>(clie
 {
     client.BaseAddress = new Uri("https://in5nite-ml-fdcycfe6gkfnhdg2.southeastasia-01.azurewebsites.net");
 });
+
+
+//Campaign Service
+builder.Services.AddScoped<ICampaignService, CampaignService>();
+builder.Services.AddScoped<ICampaignRepository, CampaignRepository>();
+
+//Reward Catalogue Service
+builder.Services.AddScoped<IRewardCatalogueService, RewardCatalogueService>();
+builder.Services.AddScoped<IRewardCatalogueRepository, RewardCatalogueRepository>();
 
 builder.Services.AddAuthorization();
 
