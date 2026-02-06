@@ -10,20 +10,26 @@ namespace ADWebApplication.Controllers
     public class CollectorDashboardController : Controller
     {
         private readonly ICollectorService _collectorService;
+    private readonly IConfiguration _config;
 
-        public CollectorDashboardController(ICollectorService collectorService)
-        {
-            _collectorService = collectorService;
-        }
+    public CollectorDashboardController(
+        ICollectorService collectorService,
+        IConfiguration config)
+    {
+        _collectorService = collectorService;
+        _config = config;
+    }
 
-        public async Task<IActionResult> Index()
-        {
-            var username = User.Identity?.Name;
-            if (string.IsNullOrEmpty(username)) return Unauthorized();
+    public async Task<IActionResult> Index()
+    {
+        ViewBag.GoogleMapsKey = _config["GOOGLE_MAPS_API_KEY"];
 
-            var route = await _collectorService.GetDailyRouteAsync(username);
-            return View(route);
-        }
+        var username = User.Identity?.Name;
+        if (string.IsNullOrEmpty(username)) return Unauthorized();
+
+        var route = await _collectorService.GetDailyRouteAsync(username);
+        return View(route);
+    }
 
         [HttpGet]
         public async Task<IActionResult> ConfirmCollection(int id)
