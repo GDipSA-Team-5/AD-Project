@@ -253,8 +253,8 @@ public class BinPredictionService : IBinPredictionService
             .ToListAsync();
 
         var nextStopByBin = nextRouteStop
-            .Where(x => x != null)
-            .ToDictionary(x => x!.BinId, x => x!);
+            .Where(x => x != null && x.BinId.HasValue)
+            .ToDictionary(x => x!.BinId!.Value, x => x!);
 
         var rows = new List<BinPredictionsTableViewModel>();
 
