@@ -177,7 +177,7 @@ public class BinPredictionService : IBinPredictionService
             return CreateRowForBin(bin, latestCollection, latestCollectedAt, null, nextStop, today, true);
         }
 
-        if (latestPrediction == null || !cycleDurationDays.HasValue || !cycleStartMonth.HasValue)
+        if (!cycleDurationDays.HasValue || !cycleStartMonth.HasValue)
         {
             missingPredictionCount++;
             return null;
@@ -186,7 +186,49 @@ public class BinPredictionService : IBinPredictionService
         return CreateRowForBin(bin, latestCollection, latestCollectedAt, latestPrediction, nextStop, today, false);
     }
 
-    private IEnumerable<BinPredictionsTableViewModel> SortAndFilterRows(IEnumerable<BinPredictionsTableViewModel> rows,
+    private static int GetPrioritySortKey(BinPredictionsTableViewModel row)
+    {
+        if (row.RiskLevel == "High" && row.PlanningStatus == "Not Scheduled")
+        {
+            return 0;
+        }
+        if (row.RiskLevel == "High")
+        {
+            return 1;
+        }
+        if (row.RiskLevel == "Medium")
+        {
+            return 2;
+        }
+        return 3;
+    }
+
+    private static IEnumerable<BinPredictionsTableViewModel> ApplySort(IEnumerable<BinPredictionsTableViewModel> query, 
+        string sort, bool isDesc)
+    {
+        if (sort == "EstimatedFill")
+        {
+            return isDesc
+                ? query.OrderByDescending(r => r.EstimatedFillToday)
+                : query.OrderBy(r => r.EstimatedFillToday);
+        }
+        
+        if (sort == "AvgGrowth")
+        {
+            var defaultValueAsc = double.MaxValue;
+            var defaultValueDesc = -1.0;
+            return isDesc
+                ? query.OrderByDescending(r => r.PredictedNextAvgDailyGrowth ?? defaultValueDesc)
+                : query.OrderBy(r => r.PredictedNextAvgDailyGrowth ?? defaultValueAsc);
+        }
+        
+        var defaultThresholdValue = int.MaxValue;
+        return isDesc
+            ? query.OrderByDescending(r => r.EstimatedDaysToThreshold ?? defaultThresholdValue)
+            : query.OrderBy(r => r.EstimatedDaysToThreshold ?? defaultThresholdValue);
+    }
+
+    private static IEnumerable<BinPredictionsTableViewModel> SortAndFilterRows(IEnumerable<BinPredictionsTableViewModel> rows,
         string sort, string sortDir, string risk, string timeframe)
     {
         var query = rows;
@@ -211,35 +253,12 @@ public class BinPredictionService : IBinPredictionService
         {
             // Priority view: high risk unscheduled bins first
             return query
-                .OrderBy(r =>
-                    r.RiskLevel == "High" && r.PlanningStatus == "Not Scheduled" ? 0 :
-                    r.RiskLevel == "High" ? 1 :
-                    r.RiskLevel == "Medium" ? 2 :
-                    3
-                )
+                .OrderBy(GetPrioritySortKey)
                 .ThenByDescending(r => r.EstimatedFillToday);
         }
 
         bool isDesc = sortDir == "desc";
-
-        if (sort == "EstimatedFill")
-        {
-            return isDesc
-                ? query.OrderByDescending(r => r.EstimatedFillToday)
-                : query.OrderBy(r => r.EstimatedFillToday);
-        }
-        else if (sort == "AvgGrowth")
-        {
-            return isDesc
-                ? query.OrderByDescending(r => r.PredictedNextAvgDailyGrowth ?? -1)
-                : query.OrderBy(r => r.PredictedNextAvgDailyGrowth ?? double.MaxValue);
-        }
-        else
-        {
-            return isDesc
-                ? query.OrderByDescending(r => r.EstimatedDaysToThreshold ?? int.MaxValue)
-                : query.OrderBy(r => r.EstimatedDaysToThreshold ?? int.MaxValue);
-        }
+        return ApplySort(query, sort, isDesc);
     }
 
     public async Task<BinPredictionsPageViewModel> BuildBinPredictionsPageAsync(int page, string sort, string sortDir, string risk, string timeframe)

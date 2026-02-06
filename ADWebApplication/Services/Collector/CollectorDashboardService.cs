@@ -147,13 +147,13 @@ namespace ADWebApplication.Services.Collector
             var stop = await _db.RouteStops
                 .Include(rs => rs.CollectionDetails)
                 .Include(rs => rs.RoutePlan)
-                    .ThenInclude(rp => rp.RouteAssignment)
+                    .ThenInclude(rp => rp!.RouteAssignment)
                 .Where(rs => rs.StopId == model.StopId 
                           && rs.RoutePlan != null 
                           && rs.RoutePlan.RouteAssignment != null
                           && rs.RoutePlan.RouteAssignment.AssignedTo == username
                           && rs.RoutePlan.PlannedDate.HasValue
-                          && rs.RoutePlan.PlannedDate.Value.Date == today)
+                          && rs.RoutePlan.PlannedDate!.Value.Date == today)
                 .FirstOrDefaultAsync();
 
             if (stop == null) return false;

@@ -30,21 +30,21 @@ namespace ADWebApplication.Services.Collector
                 {
                     BinId = rs.CollectionBin!.BinId,
                     LocationName = rs.CollectionBin!.LocationName ?? "",
-                    Region = rs.CollectionBin!.Region != null ? rs.CollectionBin.Region.RegionName : ""
+                    Region = rs.CollectionBin!.Region != null ? (rs.CollectionBin!.Region!.RegionName ?? "") : ""
                 })
                 .Distinct()
                 .ToListAsync();
 
             var issueStops = await _db.RouteStops
                 .Include(rs => rs.CollectionBin)
-                    .ThenInclude(cb => cb.Region)
+                    .ThenInclude(cb => cb!.Region)
                 .Include(rs => rs.CollectionDetails)
                 .Include(rs => rs.RoutePlan)
-                    .ThenInclude(rp => rp.RouteAssignment)
+                    .ThenInclude(rp => rp!.RouteAssignment)
                 .Where(rs => rs.RoutePlan != null
                           && rs.RoutePlan.RouteAssignment != null
                           && rs.RoutePlan.RouteAssignment.AssignedTo == username)
-                .OrderByDescending(rs => rs.RoutePlan!.PlannedDate)
+                .OrderByDescending(rs => rs.RoutePlan!.PlannedDate!)
                 .ToListAsync();
 
             var issues = issueStops
