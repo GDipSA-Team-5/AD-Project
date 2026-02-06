@@ -75,7 +75,7 @@ namespace ADWebApplication.Tests
             dbContext.CollectionBins.Add(bin);
             dbContext.CollectionDetails.Add(new CollectionDetails
             {
-                CollectionDetailsId = 1,
+                CollectionId = 1,
                 BinId = 1,
                 CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-5),
                 BinFillLevel = 20
@@ -116,7 +116,7 @@ namespace ADWebApplication.Tests
             dbContext.CollectionBins.Add(bin1);
             dbContext.CollectionDetails.Add(new CollectionDetails
             {
-                CollectionDetailsId = 1,
+                CollectionId = 1,
                 BinId = 1,
                 CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-7),
                 BinFillLevel = 20
@@ -135,7 +135,7 @@ namespace ADWebApplication.Tests
             dbContext.CollectionBins.Add(bin2);
             dbContext.CollectionDetails.Add(new CollectionDetails
             {
-                CollectionDetailsId = 2,
+                CollectionId = 2,
                 BinId = 2,
                 CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-2),
                 BinFillLevel = 20
@@ -176,7 +176,7 @@ namespace ADWebApplication.Tests
             dbContext.CollectionBins.Add(bin1);
             dbContext.CollectionDetails.Add(new CollectionDetails
             {
-                CollectionDetailsId = 1,
+                CollectionId = 1,
                 BinId = 1,
                 CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-5),
                 BinFillLevel = 20
@@ -195,7 +195,7 @@ namespace ADWebApplication.Tests
             dbContext.CollectionBins.Add(bin2);
             dbContext.CollectionDetails.Add(new CollectionDetails
             {
-                CollectionDetailsId = 2,
+                CollectionId = 2,
                 BinId = 2,
                 CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-2),
                 BinFillLevel = 20
@@ -235,7 +235,7 @@ namespace ADWebApplication.Tests
             dbContext.CollectionBins.Add(bin1);
             dbContext.CollectionDetails.Add(new CollectionDetails
             {
-                CollectionDetailsId = 1,
+                CollectionId = 1,
                 BinId = 1,
                 CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-5),
                 BinFillLevel = 20
@@ -254,7 +254,7 @@ namespace ADWebApplication.Tests
             dbContext.CollectionBins.Add(bin2);
             dbContext.CollectionDetails.Add(new CollectionDetails
             {
-                CollectionDetailsId = 2,
+                CollectionId = 2,
                 BinId = 2,
                 CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-2),
                 BinFillLevel = 20
@@ -297,7 +297,7 @@ namespace ADWebApplication.Tests
                 dbContext.CollectionBins.Add(bin);
                 dbContext.CollectionDetails.Add(new CollectionDetails
                 {
-                    CollectionDetailsId = i,
+                    CollectionId = i,
                     BinId = i,
                     CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-5),
                     BinFillLevel = 20
@@ -340,7 +340,7 @@ namespace ADWebApplication.Tests
             dbContext.CollectionBins.Add(bin);
             dbContext.CollectionDetails.Add(new CollectionDetails
             {
-                CollectionDetailsId = 1,
+                CollectionId = 1,
                 BinId = 1,
                 CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-1), // Recent collection
                 BinFillLevel = 25
@@ -381,7 +381,7 @@ namespace ADWebApplication.Tests
             dbContext.CollectionBins.Add(bin1);
             dbContext.CollectionDetails.Add(new CollectionDetails
             {
-                CollectionDetailsId = 1,
+                CollectionId = 1,
                 BinId = 1,
                 CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-7),
                 BinFillLevel = 20
@@ -427,14 +427,14 @@ namespace ADWebApplication.Tests
             dbContext.CollectionDetails.AddRange(
                 new CollectionDetails
                 {
-                    CollectionDetailsId = 1,
+                    CollectionId = 1,
                     BinId = 1,
                     CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-5),
                     BinFillLevel = 20
                 },
                 new CollectionDetails
                 {
-                    CollectionDetailsId = 2,
+                    CollectionId = 2,
                     BinId = 2,
                     CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-5),
                     BinFillLevel = 20
@@ -486,7 +486,7 @@ namespace ADWebApplication.Tests
             dbContext.CollectionBins.Add(bin1);
             dbContext.CollectionDetails.Add(new CollectionDetails
             {
-                CollectionDetailsId = 1,
+                CollectionId = 1,
                 BinId = 1,
                 CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-5),
                 BinFillLevel = 20
@@ -505,7 +505,7 @@ namespace ADWebApplication.Tests
             dbContext.CollectionBins.Add(bin2);
             dbContext.CollectionDetails.Add(new CollectionDetails
             {
-                CollectionDetailsId = 2,
+                CollectionId = 2,
                 BinId = 2,
                 CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-5),
                 BinFillLevel = 20
@@ -547,14 +547,14 @@ namespace ADWebApplication.Tests
             dbContext.CollectionDetails.AddRange(
                 new CollectionDetails
                 {
-                    CollectionDetailsId = 1,
+                    CollectionId = 1,
                     BinId = 1,
                     CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-10),
                     BinFillLevel = 80
                 },
                 new CollectionDetails
                 {
-                    CollectionDetailsId = 2,
+                    CollectionId = 2,
                     BinId = 1,
                     CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-1), // Recent collection
                     BinFillLevel = 25
@@ -598,14 +598,14 @@ namespace ADWebApplication.Tests
             dbContext.CollectionDetails.AddRange(
                 new CollectionDetails
                 {
-                    CollectionDetailsId = 1,
+                    Collectionid = 1,
                     BinId = 1,
                     CurrentCollectionDateTime = collectionTime.AddDays(-10),
                     BinFillLevel = 80
                 },
                 new CollectionDetails
                 {
-                    CollectionDetailsId = 2,
+                    Collectionid = 2,
                     BinId = 1,
                     CurrentCollectionDateTime = collectionTime,
                     BinFillLevel = 25
@@ -646,7 +646,7 @@ namespace ADWebApplication.Tests
             // Only one collection record
             dbContext.CollectionDetails.Add(new CollectionDetails
             {
-                CollectionDetailsId = 1,
+                Collectionid = 1,
                 BinId = 1,
                 CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-1),
                 BinFillLevel = 25
@@ -677,14 +677,14 @@ namespace ADWebApplication.Tests
             dbContext.CollectionDetails.AddRange(
                 new CollectionDetails
                 {
-                    CollectionDetailsId = 1,
+                    Collectionid = 1,
                     BinId = 1,
                     CurrentCollectionDateTime = olderCollectionDate,
                     BinFillLevel = 80
                 },
                 new CollectionDetails
                 {
-                    CollectionDetailsId = 2,
+                    Collectionid = 2,
                     BinId = 1,
                     CurrentCollectionDateTime = recentCollectionDate,
                     BinFillLevel = 25
@@ -726,7 +726,7 @@ namespace ADWebApplication.Tests
             // High priority bin (will reach 80% in less than 1 day)
             dbContext.CollectionDetails.Add(new CollectionDetails
             {
-                CollectionDetailsId = 1,
+                Collectionid = 1,
                 BinId = 1,
                 CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-7),
                 BinFillLevel = 20
@@ -743,7 +743,7 @@ namespace ADWebApplication.Tests
             // Low priority bin
             dbContext.CollectionDetails.Add(new CollectionDetails
             {
-                CollectionDetailsId = 2,
+                Collectionid2,
                 BinId = 2,
                 CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-2),
                 BinFillLevel = 20
@@ -787,7 +787,7 @@ namespace ADWebApplication.Tests
             // Bin with collection but no prediction
             dbContext.CollectionDetails.Add(new CollectionDetails
             {
-                CollectionDetailsId = 1,
+                Collectionid1,
                 BinId = 1,
                 CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-5),
                 BinFillLevel = 20
@@ -815,7 +815,7 @@ namespace ADWebApplication.Tests
             // Bin with zero growth rate
             dbContext.CollectionDetails.Add(new CollectionDetails
             {
-                CollectionDetailsId = 1,
+                CollectionId = 1,
                 BinId = 1,
                 CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-5),
                 BinFillLevel = 20
@@ -832,7 +832,7 @@ namespace ADWebApplication.Tests
             // Bin with negative growth rate
             dbContext.CollectionDetails.Add(new CollectionDetails
             {
-                CollectionDetailsId = 2,
+                CollectionId = 2,
                 BinId = 2,
                 CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-5),
                 BinFillLevel = 20
@@ -867,7 +867,7 @@ namespace ADWebApplication.Tests
 
             dbContext.CollectionDetails.Add(new CollectionDetails
             {
-                CollectionDetailsId = 1,
+                CollectionId = 1,
                 BinId = 1,
                 CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-5),
                 BinFillLevel = 20
@@ -904,7 +904,7 @@ namespace ADWebApplication.Tests
 
             dbContext.CollectionDetails.Add(new CollectionDetails
             {
-                CollectionDetailsId = 1,
+                CollectionId = 1,
                 BinId = 1,
                 CurrentCollectionDateTime = DateTimeOffset.UtcNow.AddDays(-10),
                 BinFillLevel = 20
@@ -933,3 +933,5 @@ namespace ADWebApplication.Tests
         #endregion
     }
 }
+
+
