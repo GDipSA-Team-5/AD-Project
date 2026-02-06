@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using ADWebApplication.Data.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
+var googleKey = builder.Configuration["GOOGLE_MAPS_API_KEY"];
 
 builder.Services.AddControllers();
 builder.Services.AddControllersWithViews();
@@ -64,7 +65,6 @@ builder.Services.AddHttpClient<IBinPredictionService, BinPredictionService>(clie
     client.BaseAddress = new Uri("https://in5nite-ml-fdcycfe6gkfnhdg2.southeastasia-01.azurewebsites.net");
 });
 
-builder.Services.AddScoped<IBinPredictionService, BinPredictionService>();
 
 //Campaign Service
 builder.Services.AddScoped<ICampaignService, CampaignService>();
