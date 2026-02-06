@@ -19,6 +19,8 @@ namespace ADWebApplication.Controllers
         [HttpGet("bins")]
         public async Task<IActionResult> GetBins()
         {
+            var today = DateTimeOffset.UtcNow.Date;
+
             var latestPredictions = await _context.FillLevelPredictions
                 .AsNoTracking()
                 .OrderByDescending(p => p.PredictedDate)
@@ -28,22 +30,53 @@ namespace ADWebApplication.Controllers
                 .GroupBy(p => p.BinId)
                 .ToDictionary(g => g.Key, g => g.First());
 
+            var latestCollections = await _context.CollectionDetails
+                .AsNoTracking()
+                .Where(cd => cd.CurrentCollectionDateTime != null)
+                .OrderByDescending(cd => cd.CurrentCollectionDateTime)
+                .ToListAsync();
+
+            var latestCollectionByBin = latestCollections
+                .GroupBy(cd => cd.BinId!.Value)
+                .ToDictionary(g => g.Key, g => g.First());
+
             var bins = await _context.CollectionBins
                 .AsNoTracking()
                 .ToListAsync();
 
-            var result = bins.Select(bin => new
+            var result = bins.Select(bin =>
             {
-                binId = bin.BinId,
-                regionId = bin.RegionId,
-                locationName = bin.LocationName,
-                locationAddress = bin.LocationAddress,
-                binStatus = bin.BinStatus,
-                latitude = bin.Latitude,
-                longitude = bin.Longitude,
-                predictedStatus = latestByBin.TryGetValue(bin.BinId, out var prediction)
-                    ? prediction.PredictedStatus
-                    : null
+                double? estimatedFillLevel = null;
+                string? riskLevel = null;
+                int? daysToThreshold = null;
+
+                if (latestByBin.TryGetValue(bin.BinId, out var prediction) &&
+                    latestCollectionByBin.TryGetValue(bin.BinId, out var lastCollection))
+                {
+                    var daysElapsed = Math.Max((today - lastCollection.CurrentCollectionDateTime!.Value).TotalDays, 0);
+                    estimatedFillLevel = Math.Clamp(prediction.PredictedAvgDailyGrowth * daysElapsed, 0, 100);
+
+                    var remaining = 80 - estimatedFillLevel.Value;
+                    daysToThreshold = estimatedFillLevel >= 80 ? 0 : (int)Math.Ceiling(remaining / prediction.PredictedAvgDailyGrowth);
+
+                    riskLevel = daysToThreshold <= 3 ? "High" : daysToThreshold <= 7 ? "Medium" : "Low";
+                }
+
+                return new
+                {
+                    binId = bin.BinId,
+                    regionId = bin.RegionId,
+                    locationName = bin.LocationName,
+                    locationAddress = bin.LocationAddress,
+                    binStatus = bin.BinStatus,
+                    latitude = bin.Latitude,
+                    longitude = bin.Longitude,
+                    predictedStatus = riskLevel ?? "Unknown",
+                    estimatedFillLevel = estimatedFillLevel.HasValue ? Math.Round(estimatedFillLevel.Value, 1) : (double?)null,
+                    riskLevel = riskLevel,
+                    daysToFull = daysToThreshold,
+                    isNearlyFull = estimatedFillLevel >= 70
+                };
             });
 
             return Ok(result);
