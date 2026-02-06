@@ -119,6 +119,7 @@ namespace ADWebApplication.Tests
             var service = new BinPredictionService(httpClient, dbContext);
 
             var region = new Region { RegionId = 1, RegionName = "North" };
+            dbContext.Regions.Add(region);
 
             // High risk bin (days to threshold <= 1)
             var bin1 = new CollectionBin { BinId = 1, BinStatus = "Active", RegionId = 1, Region = region };
@@ -143,7 +144,7 @@ namespace ADWebApplication.Tests
             {
                 PredictionId = 1,
                 BinId = 1,
-                PredictedAvgDailyGrowth = 11.0, // Will reach 77% in 7 days, about 0.27 days to 80%
+                PredictedAvgDailyGrowth = 8.5, // 20% + (7 * 8.5%) = 79.5%, days to 80% = 0.06
                 PredictedDate = DateTime.UtcNow.AddDays(-6),
                 ModelVersion = "v1"
             });
@@ -456,6 +457,7 @@ namespace ADWebApplication.Tests
             var service = new BinPredictionService(httpClient, dbContext);
 
             var region = new Region { RegionId = 1, RegionName = "North" };
+            dbContext.Regions.Add(region);
 
             // High risk unscheduled bin
             var bin1 = new CollectionBin { BinId = 1, BinStatus = "Active", RegionId = 1, Region = region };
@@ -480,7 +482,7 @@ namespace ADWebApplication.Tests
             {
                 PredictionId = 1,
                 BinId = 1,
-                PredictedAvgDailyGrowth = 11.0, // High risk
+                PredictedAvgDailyGrowth = 8.5, // 20% + (7 * 8.5%) = 79.5%, High risk
                 PredictedDate = DateTime.UtcNow.AddDays(-6),
                 ModelVersion = "v1"
             });
