@@ -38,7 +38,8 @@ namespace ADWebApplication.Services
                     RouteStops = g.Select(s => new RouteStop
                     {
                         BinId = s.BinId!.Value,
-                        StopSequence = s.StopNumber
+                        StopSequence = s.StopNumber,
+                        PlannedCollectionTime = date
                     }).ToList()
                 };
 

@@ -28,7 +28,7 @@ public class AdminRoutePlanningController : Controller
     [HttpGet("")]
     public async Task<IActionResult> Index()
     {
-        var date = DateTime.Today.AddDays(1);
+        var date = DateTime.Today;
 
         var saved = await _routePlanningService.GetPlannedRoutesAsync(date);
 
@@ -97,7 +97,7 @@ public class AdminRoutePlanningController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AssignAllRoutes(AssignAllRoutesRequestDto req)
     {
-        var date = DateTime.Today.AddDays(1);
+        var date = DateTime.Today;
         var admin = User.Identity?.Name ?? "Admin";
 
         var savedStops = await _routePlanningService.GetPlannedRoutesAsync(date);
