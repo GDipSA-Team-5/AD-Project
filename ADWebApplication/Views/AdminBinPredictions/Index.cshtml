@@ -204,7 +204,7 @@
     }
 
     @functions {
-        string FillBarClass(double fill)
+        static string FillBarClass(double fill)
         {
             if (fill >= 75) return "bg-danger";
             if (fill >= 60) return "bg-warning";
@@ -261,11 +261,8 @@
                 {
                     @foreach (var row in Model.Rows)
                     {
-                        <tr class="@(row.AutoSelected
-                            ? "row-high-risk"
-                            : row.NeedsPredictionRefresh
-                                ? "row-refresh-needed"
-                                : "")">
+                        var rowClass = row.AutoSelected ? "row-high-risk" : (row.NeedsPredictionRefresh ? "row-refresh-needed" : "");
+                        <tr class="@rowClass">
 
                             <td style="width:32px;">
                                 <input type="checkbox"
@@ -352,15 +349,7 @@
                                         @row.EstimatedDaysToThreshold
                                         day@(row.EstimatedDaysToThreshold == 1 ? "" : "s")
                                     </div>
-
-                                    @if (row.EstimatedDaysToThreshold <= 3)
-                                    {
-                                        <div class="text-muted small">ML predicted</div>
-                                    }
-                                    else
-                                    {
-                                        <div class="text-muted small">ML predicted</div>
-                                    }
+                                    <div class="text-muted small">ML predicted</div>
                                 }
                             </td>
 

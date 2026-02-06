@@ -152,7 +152,7 @@ using (var scope = app.Services.CreateScope())
         hr.PasswordHash = BCrypt.Net.BCrypt.HashPassword("Hr@12345");
     }
 
-    db.SaveChanges();
+    await db.SaveChangesAsync();
 }
 app.UseStaticFiles();
 app.UseRouting();
