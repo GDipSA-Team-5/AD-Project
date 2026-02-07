@@ -27,12 +27,26 @@ builder.Services.AddScoped<IRouteAssignmentService, RouteAssignmentService>();
 builder.Services.AddScoped<IRoutePlanningService, RoutePlanningService>();
 
 // Azure Key Vault URL
+// Azure Key Vault URL
 var keyVaultUrl = "https://in5nite-kv.vault.azure.net/";
-builder.Services.AddSingleton<ISecretProvider>(new KeyVaultSecretProvider(keyVaultUrl));
 
-// Use KeyVaultSecretProvider DI to fetch secrets instead of calling Azure Key Vault directly
+// Check whether to skip Key Vault (for tests/CI)
+var skipKeyVault = Environment.GetEnvironmentVariable("SKIP_KEYVAULT_IN_TESTS") == "true"
+                || Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
+
+if (skipKeyVault)
+{
+    // Use fake provider for tests
+    builder.Services.AddSingleton<ISecretProvider>(new FakeSecretProvider());
+}
+else
+{
+    // Use real Key Vault in production
+    builder.Services.AddSingleton<ISecretProvider>(new KeyVaultSecretProvider(keyVaultUrl));
+}
+
+// Use KeyVaultSecretProvider DI to fetch secrets
 var secretProvider = builder.Services.BuildServiceProvider().GetRequiredService<ISecretProvider>();
-
 string mySqlConn = secretProvider.GetSecret("SqlConnectionString");
 
 builder.Services.AddDbContext<In5niteDbContext>(options =>
@@ -192,4 +206,13 @@ app.Run();
 namespace ADWebApplication
 {
     public partial class Program { }
+}
+
+public class FakeSecretProvider : ISecretProvider
+{
+    public string GetSecret(string name)
+    {
+        // Return a fake in-memory SQLite connection string for tests
+        return "Server=localhost;Database=test;";
+    }
 }
