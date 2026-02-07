@@ -19,7 +19,7 @@ namespace ADWebApplication.Tests
             return new Mock<IBinPredictionService>();
         }
 
-        private AdminBinPredictionsController CreateController(Mock<IBinPredictionService> mockService)
+        private static AdminBinPredictionsController CreateController(Mock<IBinPredictionService> mockService)
         {
             var controller = new AdminBinPredictionsController(mockService.Object);
 

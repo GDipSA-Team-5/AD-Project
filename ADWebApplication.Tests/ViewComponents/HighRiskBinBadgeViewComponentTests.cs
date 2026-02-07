@@ -11,7 +11,7 @@ namespace ADWebApplication.Tests
 {
     public class HighRiskBinBadgeViewComponentTests
     {
-        private Mock<IBinPredictionService> CreateMockBinPredictionService()
+        private static Mock<IBinPredictionService> CreateMockBinPredictionService()
         {
             return new Mock<IBinPredictionService>();
         }
