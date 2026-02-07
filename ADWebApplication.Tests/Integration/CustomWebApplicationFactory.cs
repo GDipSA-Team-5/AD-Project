@@ -26,6 +26,8 @@ namespace ADWebApplication.Tests.Integration
 
                 // --- Key Vault mocking for CI ---
                 var skipKeyVault = Environment.GetEnvironmentVariable("SKIP_KEYVAULT_IN_TESTS") == "true";
+                Console.WriteLine($"SKIP_KEYVAULT_IN_TESTS: {Environment.GetEnvironmentVariable("SKIP_KEYVAULT_IN_TESTS")}");
+                Console.WriteLine($"skipKeyVault: {skipKeyVault}");
 
                 if (skipKeyVault)
                 {
@@ -35,9 +37,12 @@ namespace ADWebApplication.Tests.Integration
                 else
                 {
                     // Use real Key Vault client
-                    var keyVaultUrl = "https://in5nite-keyvault.vault.azure.net/";
-                    var realClient = new SecretClient(new Uri(keyVaultUrl), new DefaultAzureCredential());
-                    services.AddSingleton<ISecretClient>(new RealSecretClientWrapper(realClient));
+                    services.AddSingleton<ISecretClient>(sp =>
+                    {
+                        var keyVaultUrl = "https://in5nite-keyvault.vault.azure.net/";
+                        var realClient = new SecretClient(new Uri(keyVaultUrl), new DefaultAzureCredential());
+                        return new RealSecretClientWrapper(realClient);
+                    });
                 }
 
                 // --- Ensure DB is created ---
