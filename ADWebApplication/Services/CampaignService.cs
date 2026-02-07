@@ -190,16 +190,25 @@ namespace ADWebApplication.Services
             return result;
         }
         public async Task<decimal> CalculateTotalIncentivesAsync(int basePoints)
-        {
+     {
             var currentCampaign = await GetCurrentCampaignAsync();
-            if (currentCampaign == null)
-                return basePoints;
-            return currentCampaign.IncentiveType switch
-            {
-                "Multiplier" => basePoints * currentCampaign.IncentiveValue,
-                "Bonus" => basePoints + currentCampaign.IncentiveValue,
-                _ => basePoints
-            };
+                if (currentCampaign == null)
+                {
+                    _logger.LogWarning("No active campaign found, returning base points");
+                    return basePoints;
+                }
+                
+                var totalPoints = currentCampaign.IncentiveType switch
+                {
+                    "Multiplier" => basePoints * currentCampaign.IncentiveValue,
+                    "Bonus" => basePoints + currentCampaign.IncentiveValue,
+                    _ => basePoints
+                };
+                
+                _logger.LogDebug("Calculated incentive points: {TotalPoints} (Base: {BasePoints}, Campaign: {CampaignId}, Type: {IncentiveType}, Value: {IncentiveValue})",
+                    totalPoints, basePoints, currentCampaign.CampaignId, currentCampaign.IncentiveType, currentCampaign.IncentiveValue);
+                
+                return totalPoints;
         }
     }
 }
