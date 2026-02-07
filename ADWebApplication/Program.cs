@@ -27,7 +27,7 @@ builder.Services.AddScoped<IRouteAssignmentService, RouteAssignmentService>();
 builder.Services.AddScoped<IRoutePlanningService, RoutePlanningService>();
 
 // Azure Key Vault URL
-var keyVaultUrl = "https://in5nite-keyvault.vault.azure.net/";
+var keyVaultUrl = "https://in5nite-kv.vault.azure.net/";
 
 // Use DefaultAzureCredential locally — The cloud based App Service this will automatically use the managed identity instead
 var client = new SecretClient(new Uri(keyVaultUrl), new DefaultAzureCredential());
