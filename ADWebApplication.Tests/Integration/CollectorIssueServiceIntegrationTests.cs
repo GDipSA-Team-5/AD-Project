@@ -83,6 +83,7 @@ namespace ADWebApplication.Tests.Integration
                 // Assert
                 Assert.True(result);
                 var updatedStop = await db.RouteStops.FindAsync(stop.StopId);
+                Assert.NotNull(updatedStop);
                 Assert.Contains("Overflow", updatedStop.IssueLog);
             });
         }
@@ -127,6 +128,7 @@ namespace ADWebApplication.Tests.Integration
                 // Assert
                 Assert.Equal("In Progress", newStatus);
                 var updatedStop = await db.RouteStops.AsNoTracking().FirstOrDefaultAsync(s => s.StopId == stop.StopId);
+                Assert.NotNull(updatedStop);
                 Assert.Contains("status: In Progress", updatedStop.IssueLog);
             });
         }
@@ -245,6 +247,7 @@ namespace ADWebApplication.Tests.Integration
                 // Assert
                 Assert.True(result);
                 var updatedStop = await db.RouteStops.FindAsync(stop.StopId);
+                Assert.NotNull(updatedStop);
                 Assert.Contains("Small crack", updatedStop.IssueLog);
                 Assert.Contains("Bin is full", updatedStop.IssueLog);
                 Assert.Contains("Overflow", updatedStop.IssueLog);
@@ -346,6 +349,7 @@ namespace ADWebApplication.Tests.Integration
                 // Assert
                 Assert.Equal("Resolved", result);
                 var updatedStop = await db.RouteStops.AsNoTracking().FirstOrDefaultAsync(s => s.StopId == stop.StopId);
+                Assert.NotNull(updatedStop);
                 Assert.Contains("status: Resolved", updatedStop.IssueLog);
             });
         }
@@ -400,6 +404,7 @@ namespace ADWebApplication.Tests.Integration
                 // Assert
                 Assert.Equal("In Progress", result);
                 var updatedDetail = await db.CollectionDetails.AsNoTracking().FirstOrDefaultAsync(d => d.CollectionId == detail.CollectionId);
+                Assert.NotNull(updatedDetail);
                 Assert.Contains("status: In Progress", updatedDetail.IssueLog);
             });
         }
@@ -778,6 +783,7 @@ namespace ADWebApplication.Tests.Integration
                 // Assert
                 Assert.Equal("In Progress", result);
                 var updatedStop = await db.RouteStops.AsNoTracking().FirstOrDefaultAsync(s => s.StopId == stop.StopId);
+                Assert.NotNull(updatedStop);
                 Assert.Contains("status: In Progress", updatedStop.IssueLog);
             });
         }

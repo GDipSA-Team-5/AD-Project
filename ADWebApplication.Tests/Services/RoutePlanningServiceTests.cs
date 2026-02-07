@@ -88,7 +88,7 @@ public class RoutePlanningServiceTests
         double lat2 = 1.352083; double lon2 = 103.819836; // Central Area
 
         // Act
-        var distance = _service.CalculateDistance(lat1, lon1, lat2, lon2);
+        var distance = RoutePlanningService.CalculateDistance(lat1, lon1, lat2, lon2);
 
         // Assert: Roughly 7-8km
         distance.Should().BeInRange(7, 9);
