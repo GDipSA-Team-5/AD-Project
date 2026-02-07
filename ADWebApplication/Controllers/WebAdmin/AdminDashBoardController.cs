@@ -34,26 +34,43 @@ namespace ADWebApplication.Controllers
         {
             try
             {
-                _logger.LogInformation("Starting dashboard data retrieval...");
+                if(_logger.IsEnabled(LogLevel.Information))
+                {
+                    _logger.LogInformation("Starting dashboard data retrieval...");
+                }
 
                 var kpis = await _dashboardRepository.GetAdminDashboardAsync();
-                _logger.LogInformation("KPIs retrieved: {Users} users", kpis.TotalUsers);
+                if(_logger.IsEnabled(LogLevel.Information))
+                {
+                    _logger.LogInformation("KPIs retrieved: {Users} users", kpis.TotalUsers);
+                }
 
                 var trends = await _dashboardRepository.GetCollectionTrendsAsync();
+                if(_logger.IsEnabled(LogLevel.Information))
+                {
                 _logger.LogInformation("Trends retrieved: {Count} records", trends.Count);
+                }
 
                 var categories = await _dashboardRepository.GetCategoryBreakdownAsync();
+                if(_logger.IsEnabled(LogLevel.Information))
+                {
                 _logger.LogInformation("Categories retrieved: {Count} records", categories.Count);
+                }
 
                 var performance = await _dashboardRepository.GetAvgPerformanceMetricsAsync();
+                if(_logger.IsEnabled(LogLevel.Information))
+                {   
                 _logger.LogInformation("Performance retrieved: {Count} records", performance.Count);
+                }
 
                 // var highRisk = await _dashboardRepository.GetHighRiskUnscheduledCountAsync();
                 // _logger.LogInformation("High risk count: {Count}", highRisk);
 
                 var binCounts = await _dashboardRepository.GetBinCountsAsync();
+                if(_logger.IsEnabled(LogLevel.Information))
+                {
                 _logger.LogInformation("Bin counts retrieved: {Active}/{Total}", binCounts.ActiveBins, binCounts.TotalBins);
-
+                }
                 var predictionVm = await _binPredictionService
                     .BuildBinPredictionsPageAsync(
                         page: 1,
@@ -111,7 +128,10 @@ namespace ADWebApplication.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving admin dashboard data.");
+                if ( _logger.IsEnabled(LogLevel.Error))
+                {
+                    _logger.LogError(ex, "Error retrieving admin dashboard data.");
+                }
                 return View(new AdminDashboardViewModel
                 {
                     KPIs = new DashboardKPIs(),
@@ -135,7 +155,10 @@ namespace ADWebApplication.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving admin dashboard KPIs.");
+                if(_logger.IsEnabled(LogLevel.Error))
+                {
+                    _logger.LogError(ex, "Error retrieving admin dashboard KPIs.");
+                }
                 return StatusCode(500, "Internal server error");
             }
         }

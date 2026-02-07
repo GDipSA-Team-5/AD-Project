@@ -17,12 +17,19 @@ namespace ADWebApplication.Services
         public CampaignService(ICampaignRepository campaignRepository, ILogger<CampaignService> logger)
         {
             _campaignRepository = campaignRepository??throw new ArgumentNullException(nameof(campaignRepository));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            if(logger.IsEnabled(LogLevel.Information))
+            {
+                _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            }
+            
         }
 
         public async Task<IEnumerable<Campaign>> GetAllCampaignsAsync()
         {
+            if(_logger.IsEnabled(LogLevel.Information))
+            {
             _logger.LogInformation("Retrieving all campaigns.");
+            }
             return await _campaignRepository.GetAllCampaignsAsync();
         }
 
@@ -68,7 +75,10 @@ namespace ADWebApplication.Services
         }
         public async Task<bool> UpdateCampaignAsync(Campaign campaign)
         {
+            if(_logger.IsEnabled(LogLevel.Information))
+            {
             _logger.LogInformation("Updating campaign with ID: {campaignId}", campaign.CampaignId);
+            }
             if (campaign.EndDate < campaign.StartDate)
             {
                 throw new InvalidOperationException("EndDate cannot be earlier than StartDate.");
@@ -89,22 +99,34 @@ namespace ADWebApplication.Services
             var result = await _campaignRepository.UpdateCampaignAsync(campaign);
             if (result)
             {
+                if( _logger.IsEnabled(LogLevel.Information))
+                {
                 _logger.LogInformation("Campaign with ID: {campaignId} updated successfully.", campaign.CampaignId);
+                }
             }
             else
             {
+                if( _logger.IsEnabled(LogLevel.Warning))
+                {
                 _logger.LogWarning("Failed to update campaign with ID: {campaignId}. It may not exist.", campaign.CampaignId);
+                }
             }
             return result;
         }
         public async Task<bool> DeleteCampaignAsync(int campaignId)
         {
+            if(_logger.IsEnabled(LogLevel.Information))
+            {
             _logger.LogInformation("Deleting campaign with ID: {campaignId}", campaignId);
+            }
 
             var campaign = await _campaignRepository.GetCampaignByIdAsync(campaignId);
             if (campaign == null)
             {
+                if(_logger.IsEnabled(LogLevel.Warning))
+                {
                 _logger.LogWarning("Campaign with ID: {campaignId} not found.", campaignId);
+                }
                 return false;
             }
             if (campaign.Status == "Active")
@@ -115,23 +137,35 @@ namespace ADWebApplication.Services
     
             if (result)
             {
+                if(_logger.IsEnabled(LogLevel.Information))
+                {
                 _logger.LogInformation("Campaign with ID: {CampaignId} deleted successfully", campaignId);
+                }
             }
             else
             {
+                if(_logger.IsEnabled(LogLevel.Warning))
+                {
                 _logger.LogWarning("Failed to delete campaign with ID: {CampaignId}", campaignId);
+                }
             }
             
             return result;
         }
         public async Task<IEnumerable<Campaign>> GetActiveCampaignsAsync()
         {
+            if(_logger.IsEnabled(LogLevel.Information))
+            {
             _logger.LogInformation("Retrieving active campaigns.");
+            }
             return await _campaignRepository.GetActiveCampaignsAsync();
         }
         public async Task<Campaign?> GetCurrentCampaignAsync()
         {
+            if(_logger.IsEnabled(LogLevel.Information))
+            {
             _logger.LogInformation("Retrieving current campaign.");
+            }
             return await _campaignRepository.GetCurrentCampaignAsync();
         }
         public async Task<bool> ActivateCampaignAsync(int campaignId)
@@ -143,7 +177,10 @@ namespace ADWebApplication.Services
             var campaign = await _campaignRepository.GetCampaignByIdAsync(campaignId);
             if (campaign == null)
             {
+                if(_logger.IsEnabled(LogLevel.Warning))
+                {
                 _logger.LogWarning("Campaign with ID: {CampaignId} not found.", campaignId);
+                }
                 return false;
             }
             var now = DateTime.UtcNow;
@@ -156,11 +193,17 @@ namespace ADWebApplication.Services
     
             if (result)
             {
+                if(_logger.IsEnabled(LogLevel.Information))
+                {
                 _logger.LogInformation("Campaign with ID: {CampaignId} activated successfully", campaignId);
+                }
             }
             else
             {
+                if(_logger.IsEnabled(LogLevel.Warning))
+                {   
                 _logger.LogWarning("Failed to activate campaign with ID: {CampaignId}", campaignId);
+                }
             }
             
             return result;
@@ -180,11 +223,17 @@ namespace ADWebApplication.Services
     
             if (result)
             {
+                if(_logger.IsEnabled(LogLevel.Information))
+                {
                 _logger.LogInformation("Campaign with ID: {CampaignId} deactivated successfully", campaignId);
+                }
             }
             else
             {
+                if(_logger.IsEnabled(LogLevel.Warning))
+                {
                 _logger.LogWarning("Failed to deactivate campaign with ID: {CampaignId}", campaignId);
+                }
             }
             
             return result;
@@ -194,7 +243,10 @@ namespace ADWebApplication.Services
             var currentCampaign = await GetCurrentCampaignAsync();
                 if (currentCampaign == null)
                 {
+                    if(_logger.IsEnabled(LogLevel.Warning))
+                    {
                     _logger.LogWarning("No active campaign found, returning base points");
+                    }
                     return basePoints;
                 }
                 
@@ -205,8 +257,11 @@ namespace ADWebApplication.Services
                     _ => basePoints
                 };
                 
+                if(_logger.IsEnabled(LogLevel.Debug))
+                {
                 _logger.LogDebug("Calculated incentive points: {TotalPoints} (Base: {BasePoints}, Campaign: {CampaignId}, Type: {IncentiveType}, Value: {IncentiveValue})",
                     totalPoints, basePoints, currentCampaign.CampaignId, currentCampaign.IncentiveType, currentCampaign.IncentiveValue);
+                }
                 
                 return totalPoints;
         }
