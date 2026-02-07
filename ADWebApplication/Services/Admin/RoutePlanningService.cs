@@ -213,7 +213,7 @@ namespace ADWebApplication.Services
             return distanceMatrix;
         }
 
-        public double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
+        public static double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
         {
             var R = 6371; // Earth's radius in kilometers
             var dLat = ToRadians(lat2 - lat1);
