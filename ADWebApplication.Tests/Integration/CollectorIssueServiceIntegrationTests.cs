@@ -449,8 +449,8 @@ namespace ADWebApplication.Tests.Integration
                 // Assert
                 Assert.NotEmpty(vm.Issues);
                 Assert.All(vm.Issues, i => Assert.True(
-                    i.IssueType.ToLowerInvariant().Contains("overflow") ||
-                    i.Description.ToLowerInvariant().Contains("overflow")));
+                    i.IssueType.Contains("overflow", StringComparison.OrdinalIgnoreCase) ||
+                    i.Description.Contains("overflow", StringComparison.OrdinalIgnoreCase)));
             });
         }
 

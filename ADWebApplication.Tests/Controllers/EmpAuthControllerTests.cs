@@ -35,6 +35,7 @@ namespace ADWebApplication.Tests.Controllers
         {
             using var context = new In5niteDbContext(_options);
             context.Database.EnsureDeleted();
+            GC.SuppressFinalize(this);
         }
 
         private In5niteDbContext CreateContext() => new In5niteDbContext(_options);
@@ -432,7 +433,7 @@ namespace ADWebApplication.Tests.Controllers
             // Assert
             var jsonResult = Assert.IsType<JsonResult>(result);
             dynamic value = jsonResult.Value!;
-            Assert.Equal(false, value.GetType().GetProperty("success")!.GetValue(value));
+            Assert.False((bool)value.GetType().GetProperty("success")!.GetValue(value)!);
         }
 
         [Fact]
@@ -452,7 +453,7 @@ namespace ADWebApplication.Tests.Controllers
             // Assert
             var jsonResult = Assert.IsType<JsonResult>(result);
             dynamic value = jsonResult.Value!;
-            Assert.Equal(true, value.GetType().GetProperty("success")!.GetValue(value));
+            Assert.True((bool)value.GetType().GetProperty("success")!.GetValue(value)!);
             _mockEmailService.Verify(e => e.SendOtpEmail("test@example.com", It.IsAny<string>()), Times.Once);
         }
 

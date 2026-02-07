@@ -46,7 +46,7 @@ namespace ADWebApplication.Tests.MobileAPI
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var returnedRegions = Assert.IsAssignableFrom<List<Region>>(okResult.Value);
+            var returnedRegions = Assert.IsType<List<Region>>(okResult.Value, exactMatch: false);
             Assert.Equal(3, returnedRegions.Count);
             Assert.Equal("Central", returnedRegions[0].RegionName);
         }
@@ -63,7 +63,7 @@ namespace ADWebApplication.Tests.MobileAPI
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var returnedRegions = Assert.IsAssignableFrom<List<Region>>(okResult.Value);
+            var returnedRegions = Assert.IsType<List<Region>>(okResult.Value, exactMatch: false);
             Assert.Empty(returnedRegions);
         }
 

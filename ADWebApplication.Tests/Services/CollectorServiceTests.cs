@@ -429,7 +429,7 @@ namespace ADWebApplication.Tests.Services
                 mockIssue.Object);
 
             // Assert
-            Assert.IsAssignableFrom<ICollectorService>(service);
+            Assert.IsType<ICollectorService>(service, exactMatch: false);
         }
 
         [Fact]
@@ -447,7 +447,7 @@ namespace ADWebApplication.Tests.Services
                 mockIssue.Object);
 
             // Assert
-            Assert.IsAssignableFrom<ICollectorDashboardService>(service);
+            Assert.IsType<ICollectorDashboardService>(service, exactMatch: false);
         }
 
         [Fact]
@@ -465,7 +465,7 @@ namespace ADWebApplication.Tests.Services
                 mockIssue.Object);
 
             // Assert
-            Assert.IsAssignableFrom<ICollectorAssignmentService>(service);
+            Assert.IsType<ICollectorAssignmentService>(service, exactMatch: false);
         }
 
         [Fact]
@@ -483,7 +483,7 @@ namespace ADWebApplication.Tests.Services
                 mockIssue.Object);
 
             // Assert
-            Assert.IsAssignableFrom<ICollectorIssueService>(service);
+            Assert.IsType<ICollectorIssueService>(service, exactMatch: false);
         }
 
         #endregion

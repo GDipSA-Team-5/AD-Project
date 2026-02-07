@@ -8,6 +8,7 @@ using ADWebApplication.Services.Collector;
 using ADWebApplication.Models;
 using ADWebApplication.ViewModels;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Net.Http.Headers;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Security.Claims;
@@ -228,7 +229,7 @@ namespace ADWebApplication.Tests.Controllers
                 .ReturnsAsync(true);
 
             var controller = CreateController(mockService, mockConfig);
-            controller.Request.Headers["X-Requested-With"] = "XMLHttpRequest";
+            controller.Request.Headers[HeaderNames.XRequestedWith] = "XMLHttpRequest";
 
             // Act
             var result = await controller.ConfirmCollection(model);
@@ -281,7 +282,7 @@ namespace ADWebApplication.Tests.Controllers
 
             var controller = CreateController(mockService, mockConfig);
             controller.ModelState.AddModelError("BinFillLevel", "Required");
-            controller.Request.Headers["X-Requested-With"] = "XMLHttpRequest";
+            controller.Request.Headers[HeaderNames.XRequestedWith] = "XMLHttpRequest";
 
             // Act
             var result = await controller.ConfirmCollection(model);

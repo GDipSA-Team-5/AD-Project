@@ -7,7 +7,9 @@ using ADWebApplication.Services;
 using ADWebApplication.Models.DTOs;
 using ADWebApplication.Models;
 
-public class RoutePlanningServiceTests
+namespace ADWebApplication.Tests.Services
+{
+    public class RoutePlanningServiceTests
 {
     private readonly In5niteDbContext _dbContext;
     private readonly Mock<IBinPredictionService> _mockPredictionService;
@@ -132,5 +134,6 @@ public class RoutePlanningServiceTests
         result.Should().NotBeEmpty();
         result.All(b => b.AssignedCO > 0).Should().BeTrue(); // Verify officers (1, 2, or 3) are assigned
         result.All(b => b.StopNumber > 0).Should().BeTrue(); // Verify stop sequence is generated
+    }
     }
 }

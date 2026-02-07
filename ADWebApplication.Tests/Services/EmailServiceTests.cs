@@ -136,7 +136,7 @@ namespace ADWebApplication.Tests.Services
             var service = new EmailService(mockConfig.Object);
 
             // Assert
-            Assert.IsAssignableFrom<IEmailService>(service);
+            Assert.IsType<IEmailService>(service, exactMatch: false);
         }
     }
 }

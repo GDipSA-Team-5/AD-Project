@@ -31,6 +31,7 @@ namespace ADWebApplication.Tests.Controllers
         {
             using var context = new In5niteDbContext(_options);
             context.Database.EnsureDeleted();
+            GC.SuppressFinalize(this);
         }
 
         private In5niteDbContext CreateContext() => new In5niteDbContext(_options);
@@ -108,7 +109,7 @@ namespace ADWebApplication.Tests.Controllers
 
             // Assert
             var viewResult = Assert.IsType<ViewResult>(result);
-            var model = Assert.IsAssignableFrom<List<EmployeeRowViewModel>>(viewResult.Model);
+            var model = Assert.IsType<List<EmployeeRowViewModel>>(viewResult.Model, exactMatch: false);
             Assert.Equal(2, model.Count);
         }
 
@@ -124,7 +125,7 @@ namespace ADWebApplication.Tests.Controllers
 
             // Assert
             var viewResult = Assert.IsType<ViewResult>(result);
-            var model = Assert.IsAssignableFrom<List<EmployeeRowViewModel>>(viewResult.Model);
+            var model = Assert.IsType<List<EmployeeRowViewModel>>(viewResult.Model, exactMatch: false);
             Assert.Equal("EMP001", model.First().Username);
             Assert.Equal("EMP002", model.Last().Username);
         }
@@ -141,7 +142,7 @@ namespace ADWebApplication.Tests.Controllers
 
             // Assert
             var viewResult = Assert.IsType<ViewResult>(result);
-            var model = Assert.IsAssignableFrom<List<EmployeeRowViewModel>>(viewResult.Model);
+            var model = Assert.IsType<List<EmployeeRowViewModel>>(viewResult.Model, exactMatch: false);
             Assert.Equal("Admin", model.First().RoleName);
             Assert.Equal("Collector", model.Last().RoleName);
         }

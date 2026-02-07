@@ -35,6 +35,7 @@ namespace ADWebApplication.Tests.Services
         {
             _connection.Close();
             _connection.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         private In5niteDbContext CreateContext() => new In5niteDbContext(_options);
