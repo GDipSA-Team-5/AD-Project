@@ -27,7 +27,7 @@ namespace ADWebApplication.Data.Repository
             var targetMonth = forMonth ?? DateTime.Now.AddMonths(-1);
             var previousMonth = targetMonth.AddMonths(-1);
             //var totalUsers = await _db.Users.CountAsync(u => u.IsActive);
-            // 🔍 DEBUG: Multiple approaches
+          
             Console.WriteLine("=== USER COUNT DEBUG ===");
 
             var allUsers = await _db.PublicUser.CountAsync();
@@ -53,7 +53,7 @@ namespace ADWebApplication.Data.Repository
             var prevCollections = await _db.DisposalLogs.CountAsync(l =>
                 l.DisposalTimeStamp.Year == previousMonth.Year && l.DisposalTimeStamp.Month == previousMonth.Month);
 
-            // 🔍 DEBUG OUTPUT
+        
             Console.WriteLine($"Current Collections (Feb 2026): {currentCollections}");
             Console.WriteLine($"Prev Collections (Jan 2026): {prevCollections}");
 
@@ -174,19 +174,20 @@ namespace ADWebApplication.Data.Repository
             var cutoff = DateTime.UtcNow.AddMonths(-1);
 
             var areaStats = await (from log in _db.DisposalLogs
-                                   join bin in _db.CollectionBins on log.BinId equals bin.BinId into binJoin
-                                   from bin in binJoin.DefaultIfEmpty()
-                                   join region in _db.Regions on bin.RegionId equals region.RegionId into regionJoin
-                                   from region in regionJoin.DefaultIfEmpty()
-                                   where log.DisposalTimeStamp >= cutoff
-                                   group new { log, bin, region } by new { bin.RegionId, region.RegionName } into g
-                                   select new
-                                   {
-                                       RegionId = g.Key.RegionId,
-                                       RegionName = g.Key.RegionName,
-                                       Collections = g.Count(),
-                                       UniqueUsers = g.Select(x => x.log.UserId).Distinct().Count()
-                                   })
+                                join bin in _db.CollectionBins on log.BinId equals bin.BinId into binJoin
+                                from bin in binJoin.DefaultIfEmpty()
+                                join region in _db.Regions on bin.RegionId equals region.RegionId into regionJoin
+                                from region in regionJoin.DefaultIfEmpty()
+                                where log.DisposalTimeStamp >= cutoff
+                                        && bin.RegionId != null  // ✅ ADD THIS - Filter out unassigned regions
+                                group new { log, bin, region } by new { bin.RegionId, region.RegionName } into g
+                                select new
+                                {
+                                    RegionId = g.Key.RegionId,
+                                    RegionName = g.Key.RegionName,
+                                    Collections = g.Count(),
+                                    UniqueUsers = g.Select(x => x.log.UserId).Distinct().Count()
+                                })
                 .OrderByDescending(g => g.Collections)
                 .ToListAsync();
 
@@ -202,6 +203,7 @@ namespace ADWebApplication.Data.Repository
                 .ToDictionaryAsync(x => x.RegionId!.Value, x => x.TotalUsers);
 
             return areaStats
+                .Where(a => a.RegionId.HasValue)  // ✅ ADD THIS - Extra safety filter
                 .Select(a =>
                 {
                     var totalUsers = 0;
@@ -217,7 +219,7 @@ namespace ADWebApplication.Data.Repository
                     return new AvgPerformance
                     {
                         Area = string.IsNullOrWhiteSpace(a.RegionName)
-                            ? (a.RegionId.HasValue ? $"Region {a.RegionId}" : "Unassigned")
+                            ? $"Region {a.RegionId}"
                             : a.RegionName,
                         Collections = a.Collections,
                         Participation = Math.Round(participation, 2)

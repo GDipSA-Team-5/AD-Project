@@ -73,7 +73,8 @@
                     </div>
                 </div>
             </div>
-
+        </div>
+@*      
             <!-- Today's Operations -->
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="mb-0">Today's Operations</h4>
@@ -123,50 +124,100 @@
                     <small class="text-muted">0%</small>
                 </div>
             </div>
-        </div>
-
-        <!-- Right Column: Alerts & Notifications -->
-        <div class="col-lg-6">
-            <h4 class="mb-3">Alerts & Notifications</h4>
-
-            @if (Model.Alerts != null && Model.Alerts.Any())
-            {
-                foreach (var alert in Model.Alerts)
+        </div> *@
+       
+            <!-- Right Column: Alerts & Notifications -->
+            <div class="col-lg-6">
+                <h4 class="mb-3">Alerts & Notifications</h4>
+                @if (Model.Alerts != null && Model.Alerts.Any())
                 {
-                    <div class="alert-box @(alert.Type == "HighRisk" ? "danger" : "warning")">
-                        <div class="d-flex">
-                            <div class="alert-icon me-3">
-                                <i class="bi @(alert.Type == "HighRisk"
-                                                                           ? "bi-exclamation-circle"
-                                                                           : "bi-exclamation-triangle")"></i>
-                            </div>
+                    foreach (var alert in Model.Alerts)
+                    {
+                        <div class="alert-box @(alert.Type == "HighRisk" ? "danger" : "warning")">
+                            <div class="d-flex">
+                                <div class="alert-icon me-3">
+                                    <i class="bi @(alert.Type == "HighRisk"
+                                                                            ? "bi-exclamation-circle"
+                                                                            : "bi-exclamation-triangle")"></i>
+                                </div>
 
-                            <div class="flex-grow-1">
-                                <h6 class="mb-1">@alert.Title</h6>
-                                <p class="mb-2 text-muted small">@alert.Message</p>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">@alert.Title</h6>
+                                    <p class="mb-2 text-muted small">@alert.Message</p>
 
-                                <div class="d-flex justify-content-end">
-                                    <a href="@alert.LinkUrl" class="text-decoration-none small">
-                                        @alert.LinkText <i class="bi bi-arrow-right"></i>
-                                    </a>
+                                    <div class="d-flex justify-content-end">
+                                        <a href="@alert.LinkUrl" class="text-decoration-none small">
+                                            @alert.LinkText <i class="bi bi-arrow-right"></i>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    }
                 }
-            }
-            else
-            {
-                <div class="text-muted small">No alerts at the moment.</div>
-            }
+                else
+                {
+                    <div class="text-muted small">No alerts at the moment.</div>
+                }
+            </div>
         </div>
-
-        <!-- System Performance & Participation -->
+            <!-- System Performance & Participation -->
         <div class="row mt-5">
             <div class="col-12">
                 <h4 class="mb-3">System Performance & Participation</h4>
             </div>
-
+            <div class="col-12 mb-4">
+                <div class="chart-container">
+                    <h5 class="mb-3">Regional Performance Overview</h5>
+                    @if (Model.PerformanceMetrics != null && Model.PerformanceMetrics.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Region</th>
+                                        <th class="text-end">Collections</th>
+                                        <th class="text-end">Participation Rate</th>
+                                        <th class="text-end">Performance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var metric in Model.PerformanceMetrics)
+                                    {
+                                        var performanceClass = metric.Participation >= 50 ? "success" : 
+                                                            metric.Participation >= 30 ? "warning" : "danger";
+                                        var performanceIcon = metric.Participation >= 50 ? "bi-arrow-up-circle-fill" : 
+                                                            metric.Participation >= 30 ? "bi-dash-circle-fill" : "bi-arrow-down-circle-fill";
+                                        
+                                        <tr>
+                                            <td>
+                                                <strong>@metric.Area</strong>
+                                            </td>
+                                            <td class="text-end">
+                                                <span class="badge bg-primary">@metric.Collections</span>
+                                            </td>
+                                            <td class="text-end">
+                                                @metric.Participation.ToString("F2")%
+                                            </td>
+                                            <td class="text-end">
+                                                <i class="bi @performanceIcon text-@performanceClass"></i>
+                                                <span class="text-@performanceClass ms-1">
+                                                    @(metric.Participation >= 50 ? "Good" : 
+                                                    metric.Participation >= 30 ? "Fair" : "Low")
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-muted small">No regional performance data available.</div>
+                    }
+                </div>
+            </div>
             <!-- Metrics -->
             <div class="col-md-4 mb-3">
                 <div class="metric-card">

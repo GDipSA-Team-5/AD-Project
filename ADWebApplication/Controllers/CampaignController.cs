@@ -57,7 +57,7 @@ namespace ADWebApplication.Controllers
                 TempData[SuccessMessageKey] = "Campaign created successfully.";
                 return RedirectToAction(nameof(Index));       
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException)
             {
                 TempData[ErrorMessageKey] = "Error creating campaign";
                 ModelState.AddModelError(string.Empty, "Unable to create campaign.");
