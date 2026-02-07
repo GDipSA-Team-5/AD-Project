@@ -27,27 +27,33 @@ builder.Services.AddScoped<IRouteAssignmentService, RouteAssignmentService>();
 builder.Services.AddScoped<IRoutePlanningService, RoutePlanningService>();
 
 // Azure Key Vault URL
-// Azure Key Vault URL
 var keyVaultUrl = "https://in5nite-kv.vault.azure.net/";
 
-// Check whether to skip Key Vault (for tests/CI)
+// Check whether to skip Key Vault (for tests/CI/local dev)
 var skipKeyVault = Environment.GetEnvironmentVariable("SKIP_KEYVAULT_IN_TESTS") == "true"
-                || Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
+                || Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true"
+                || builder.Environment.IsDevelopment();
+
+string mySqlConn;
 
 if (skipKeyVault)
 {
-    // Use fake provider for tests
-    builder.Services.AddSingleton<ISecretProvider>(new FakeSecretProvider());
+    // For local dev and tests: use User Secrets or appsettings
+    mySqlConn = builder.Configuration.GetConnectionString("DefaultConnection");
+    
+    if (string.IsNullOrEmpty(mySqlConn))
+    {
+        // Fallback for tests - will be replaced by test factory anyway
+        mySqlConn = "Server=localhost;Database=test;";
+    }
 }
 else
 {
-    // Use real Key Vault in production
+    // Production: use Key Vault
     builder.Services.AddSingleton<ISecretProvider>(new KeyVaultSecretProvider(keyVaultUrl));
+    var secretProvider = builder.Services.BuildServiceProvider().GetRequiredService<ISecretProvider>();
+    mySqlConn = secretProvider.GetSecret("SqlConnectionString");
 }
-
-// Use KeyVaultSecretProvider DI to fetch secrets
-var secretProvider = builder.Services.BuildServiceProvider().GetRequiredService<ISecretProvider>();
-string mySqlConn = secretProvider.GetSecret("SqlConnectionString");
 
 builder.Services.AddDbContext<In5niteDbContext>(options =>
     options.UseMySql(
@@ -206,13 +212,4 @@ app.Run();
 namespace ADWebApplication
 {
     public partial class Program { }
-}
-
-public class FakeSecretProvider : ISecretProvider
-{
-    public string GetSecret(string name)
-    {
-        // Return a fake in-memory SQLite connection string for tests
-        return "Server=localhost;Database=test;";
-    }
 }
