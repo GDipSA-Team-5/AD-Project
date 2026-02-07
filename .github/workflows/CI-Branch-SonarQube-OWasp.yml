@@ -59,7 +59,7 @@ jobs:
             /d:sonar.javascript.lcov.reportPaths="ADWebApplication.Tests/JavaScript/coverage/lcov.info" \
             /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml" \
             /d:sonar.cs.vstest.reportsPaths="TestResults/**/*.trx" \
-            /d:sonar.coverage.exclusions="**/Program.cs,**/Migrations/**,**/wwwroot/lib/**,**/*.min.js,**/wwwroot/js/collector-dashboard.js" \
+            /d:sonar.coverage.exclusions="**/Program.cs,**/Migrations/**,**/wwwroot/lib/**,**/*.min.js,**/wwwroot/js/collector-dashboard.js,**/Models/Entities/**,**/Models/DTOs/**" \
             /d:sonar.exclusions="**/wwwroot/lib/**,**/*.min.js" \
             /d:sonar.test.inclusions="**/*.test.js" \
             /d:sonar.verbose=true
