@@ -31,6 +31,17 @@ reportgenerator \
   -targetdir:./TestResults/CoverageReport \
   -reporttypes:Cobertura
 
+# ===== DEBUG OUTPUT =====
+echo "=== TestResults folder ==="
+ls -R ./TestResults
+
+echo "=== CoverageReport folder ==="
+ls -R ./TestResults/CoverageReport || echo "No CoverageReport folder"
+
+echo "=== First 20 lines of Cobertura.xml ==="
+head -n 20 ./TestResults/CoverageReport/Cobertura.xml || echo "No Cobertura.xml found"
+# ========================
+
 # Run JavaScript tests with coverage if Node.js is available
 if command -v node &> /dev/null; then
   echo "Running JavaScript tests with coverage..."
