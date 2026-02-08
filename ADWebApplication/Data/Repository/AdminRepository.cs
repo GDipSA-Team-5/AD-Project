@@ -184,19 +184,6 @@ namespace ADWebApplication.Data.Repository
                     rp.RouteAssignment != null &&
                     rp.PlannedDate.Value.Date >= fromDate &&
                     rp.PlannedDate.Value.Date <= toDate)
-<<<<<<< HEAD
-                .Select(rp => rp.RouteAssignment!.AssignedTo.Trim().ToUpper())
-                .Distinct()
-                .ToListAsync();*/
-
-            var busyDebug = await _infDb.RoutePlans
-                .Where(rp =>
-                    rp.PlannedDate.HasValue &&
-                    rp.RouteAssignment != null &&
-                    rp.PlannedDate!.Value.Date >= fromDate &&
-                    rp.PlannedDate!.Value.Date <= toDate)
-=======
->>>>>>> origin/main
                 .Select(rp => new
                 {
                     Username = rp.RouteAssignment!.AssignedTo,
@@ -245,13 +232,8 @@ namespace ADWebApplication.Data.Repository
         .Where(rp =>
             rp.PlannedDate.HasValue &&
             rp.RouteAssignment != null &&
-<<<<<<< HEAD
-            rp.PlannedDate!.Value.Date >= fromDate &&
-            rp.PlannedDate!.Value.Date <= toDate)
-=======
             rp.PlannedDate.Value.Date >= fromDate &&
             rp.PlannedDate.Value.Date <= toDate)
->>>>>>> origin/main
         .Select(rp => new
         {
             Username = rp.RouteAssignment!.AssignedTo.Trim().ToUpper(),

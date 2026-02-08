@@ -49,24 +49,11 @@ namespace ADWebApplication.Services
                 RouteStatus = "Scheduled",
                 RouteStops = g.Select(s => new RouteStop
                 {
-<<<<<<< HEAD
                     BinId = s.BinId!.Value,
                     StopSequence = s.StopNumber,
                     PlannedCollectionTime = date
                 }).ToList()
             };
-=======
-                    PlannedDate = date,
-                    GeneratedBy = adminUsername,
-                    RouteStatus = "Scheduled",
-                    RouteStops = g.Select(s => new RouteStop
-                    {
-                        BinId = s.BinId,
-                        StopSequence = s.StopNumber,
-                        PlannedCollectionTime = new DateTimeOffset(date, TimeZoneInfo.Local.GetUtcOffset(date))
-                    }).ToList()
-                };
->>>>>>> origin/main
 
             if (routeAssignments.TryGetValue(g.Key, out var officer))
             {

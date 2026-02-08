@@ -63,11 +63,8 @@ public class BinPredictionService : IBinPredictionService
             .ToListAsync();
 
         return records
-<<<<<<< HEAD
             .Where(cd => cd.BinId.HasValue)
-=======
->>>>>>> origin/main
-            .GroupBy(cd => cd.BinId.Value)
+            .GroupBy(cd => cd.BinId!.Value)
             .ToDictionary(
                 g => g.Key,
                 g => g.OrderByDescending(x => x.CurrentCollectionDateTime).Take(2).ToList()
@@ -275,11 +272,7 @@ public class BinPredictionService : IBinPredictionService
 
         var nextStopByBin = nextRouteStop
             .Where(x => x != null && x.BinId.HasValue)
-<<<<<<< HEAD
             .ToDictionary(x => x.BinId!.Value, x => x!);
-=======
-            .ToDictionary(x => x.BinId.Value, x => x);
->>>>>>> origin/main
 
         var rows = new List<BinPredictionsTableViewModel>();
 
