@@ -204,17 +204,17 @@ body {
 
 .stat-card .icon-wrapper.blue {
   background: #e7f1ff;
-  color: #0d6efd;
+  color: #0a58ca;
 }
 
 .stat-card .icon-wrapper.red {
   background: #ffe5e5;
-  color: #dc3545;
+  color: #b02a37;
 }
 
 .stat-card .icon-wrapper.green {
   background: #d4edda;
-  color: #28a745;
+  color: #1e7e34;
 }
 
 .stat-card .icon-wrapper.purple {
@@ -278,7 +278,7 @@ body {
 
 .alert-box.warning .alert-icon {
   background: #ffc107;
-  color: white;
+  color: #000;
 }
 
 .alert-box.info .alert-icon {
@@ -322,7 +322,7 @@ body {
 
 .badge.pending {
   background: #e9ecef;
-  color: #6c757d;
+  color: #495057;
 }
 
 .metric-card {
