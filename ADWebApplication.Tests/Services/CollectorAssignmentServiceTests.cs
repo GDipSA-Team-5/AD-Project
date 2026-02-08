@@ -364,6 +364,245 @@ namespace ADWebApplication.Tests.Services
             Assert.Null(result);
         }
 
+        [Fact]
+        public async Task GetRouteAssignmentsAsync_ReturnsAssignments_ForUser()
+        {
+            using var context = CreateContext();
+            var service = new CollectorAssignmentService(context);
+
+            var region = new Region { RegionName = "North" };
+            context.Regions.Add(region);
+            await context.SaveChangesAsync();
+
+            var bin = new CollectionBin
+            {
+                RegionId = region.RegionId,
+                LocationName = "Bin A",
+                BinStatus = "Active"
+            };
+            context.CollectionBins.Add(bin);
+            await context.SaveChangesAsync();
+
+            var assignment = new RouteAssignment
+            {
+                AssignedTo = "collector1",
+                AssignedBy = "admin"
+            };
+            context.RouteAssignments.Add(assignment);
+            await context.SaveChangesAsync();
+
+            var plan = new RoutePlan
+            {
+                AssignmentId = assignment.AssignmentId,
+                PlannedDate = DateTime.Today,
+                RouteStatus = "Pending"
+            };
+            context.RoutePlans.Add(plan);
+            await context.SaveChangesAsync();
+
+            var stop = new RouteStop
+            {
+                RouteId = plan.RouteId,
+                BinId = bin.BinId,
+                StopSequence = 1
+            };
+            context.RouteStops.Add(stop);
+            await context.SaveChangesAsync();
+
+            var result = await service.GetRouteAssignmentsAsync(
+                "collector1", null, null, null, null, 1, 10);
+
+            Assert.Single(result.Assignments);
+            Assert.Equal(1, result.TotalItems);
+        }
+
+        [Fact]
+        public async Task GetRouteAssignmentsAsync_FiltersBySearchTerm()
+        {
+            using var context = CreateContext();
+            var service = new CollectorAssignmentService(context);
+
+            var region = new Region { RegionName = "East" };
+            context.Regions.Add(region);
+            await context.SaveChangesAsync();
+
+            var bin = new CollectionBin
+            {
+                RegionId = region.RegionId,
+                LocationName = "Central Park Bin"
+            };
+            context.CollectionBins.Add(bin);
+            await context.SaveChangesAsync();
+
+            var assignment = new RouteAssignment
+            {
+                AssignedTo = "collector1",
+                AssignedBy = "admin"
+            };
+            context.RouteAssignments.Add(assignment);
+            await context.SaveChangesAsync();
+
+            var plan = new RoutePlan
+            {
+                AssignmentId = assignment.AssignmentId,
+                PlannedDate = DateTime.Today,
+                RouteStatus = "Pending"
+            };
+            context.RoutePlans.Add(plan);
+            await context.SaveChangesAsync();
+
+            context.RouteStops.Add(new RouteStop
+            {
+                RouteId = plan.RouteId,
+                BinId = bin.BinId,
+                StopSequence = 1
+            });
+            await context.SaveChangesAsync();
+
+            var result = await service.GetRouteAssignmentsAsync(
+                "collector1", "Central", null, null, null, 1, 10);
+
+            Assert.Single(result.Assignments);
+        }
+
+        [Fact]
+        public async Task GetRouteAssignmentsAsync_FiltersByRegion()
+        {
+            using var context = CreateContext();
+            var service = new CollectorAssignmentService(context);
+
+            var region1 = new Region { RegionName = "North" };
+            var region2 = new Region { RegionName = "South" };
+            context.Regions.AddRange(region1, region2);
+            await context.SaveChangesAsync();
+
+            var bin1 = new CollectionBin { RegionId = region1.RegionId, LocationName = "Bin 1" };
+            var bin2 = new CollectionBin { RegionId = region2.RegionId, LocationName = "Bin 2" };
+            context.CollectionBins.AddRange(bin1, bin2);
+            await context.SaveChangesAsync();
+
+            var assignment = new RouteAssignment { AssignedTo = "collector1", AssignedBy = "admin" };
+            context.RouteAssignments.Add(assignment);
+            await context.SaveChangesAsync();
+
+            var plan = new RoutePlan
+            {
+                AssignmentId = assignment.AssignmentId,
+                PlannedDate = DateTime.Today,
+                RouteStatus = "Pending"
+            };
+            context.RoutePlans.Add(plan);
+            await context.SaveChangesAsync();
+
+            context.RouteStops.Add(new RouteStop { RouteId = plan.RouteId, BinId = bin1.BinId, StopSequence = 1 });
+            await context.SaveChangesAsync();
+
+            var result = await service.GetRouteAssignmentsAsync(
+                "collector1", null, region1.RegionId, null, null, 1, 10);
+
+            Assert.Single(result.Assignments);
+        }
+
+        [Fact]
+        public async Task GetRouteAssignmentsAsync_PendingIncludesScheduled()
+        {
+            using var context = CreateContext();
+            var service = new CollectorAssignmentService(context);
+
+            var assignment = new RouteAssignment { AssignedTo = "collector1", AssignedBy = "admin" };
+            context.RouteAssignments.Add(assignment);
+            await context.SaveChangesAsync();
+
+            context.RoutePlans.AddRange(
+                new RoutePlan
+                {
+                    AssignmentId = assignment.AssignmentId,
+                    PlannedDate = DateTime.Today,
+                    RouteStatus = "Pending"
+                },
+                new RoutePlan
+                {
+                    AssignmentId = assignment.AssignmentId,
+                    PlannedDate = DateTime.Today,
+                    RouteStatus = "Scheduled"
+                }
+            );
+            await context.SaveChangesAsync();
+
+            var result = await service.GetRouteAssignmentsAsync(
+                "collector1", null, null, null, "Pending", 1, 10);
+
+            Assert.Equal(2, result.Assignments.Count);
+        }
+
+        [Fact]
+        public async Task GetRouteAssignmentsAsync_RespectsPagination()
+        {
+            using var context = CreateContext();
+            var service = new CollectorAssignmentService(context);
+
+            var assignment = new RouteAssignment { AssignedTo = "collector1", AssignedBy = "admin" };
+            context.RouteAssignments.Add(assignment);
+            await context.SaveChangesAsync();
+
+            for (int i = 0; i < 5; i++)
+            {
+                context.RoutePlans.Add(new RoutePlan
+                {
+                    AssignmentId = assignment.AssignmentId,
+                    PlannedDate = DateTime.Today.AddDays(i),
+                    RouteStatus = "Pending"
+                });
+            }
+            await context.SaveChangesAsync();
+
+            var result = await service.GetRouteAssignmentsAsync(
+                "collector1", null, null, null, null, page: 1, pageSize: 2);
+
+            Assert.Equal(2, result.Assignments.Count);
+            Assert.Equal(5, result.TotalItems);
+        }
+
+        [Fact]
+        public async Task GetRouteAssignmentsAsync_CalculatesCompletedStops()
+        {
+            using var context = CreateContext();
+            var service = new CollectorAssignmentService(context);
+
+            var bin = new CollectionBin { LocationName = "Bin", BinStatus = "Active" };
+            context.CollectionBins.Add(bin);
+            await context.SaveChangesAsync();
+
+            var assignment = new RouteAssignment { AssignedTo = "collector1", AssignedBy = "admin" };
+            context.RouteAssignments.Add(assignment);
+            await context.SaveChangesAsync();
+
+            var plan = new RoutePlan
+            {
+                AssignmentId = assignment.AssignmentId,
+                PlannedDate = DateTime.Today,
+                RouteStatus = "In Progress"
+            };
+            context.RoutePlans.Add(plan);
+            await context.SaveChangesAsync();
+
+            var stop = new RouteStop { RouteId = plan.RouteId, BinId = bin.BinId, StopSequence = 1 };
+            context.RouteStops.Add(stop);
+            await context.SaveChangesAsync();
+
+            context.CollectionDetails.Add(new CollectionDetails
+            {
+                StopId = stop.StopId,
+                CollectionStatus = "Collected"
+            });
+            await context.SaveChangesAsync();
+
+            var result = await service.GetRouteAssignmentsAsync(
+                "collector1", null, null, null, null, 1, 10);
+
+            Assert.Equal(1, result.Assignments.First().CompletedStops);
+        }
+
         #endregion
     }
 }

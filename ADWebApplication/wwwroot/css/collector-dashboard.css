@@ -366,12 +366,12 @@
 }
 
 .stop-badge.pending {
-    background: #f97316;
+    background: #c2410c;
     color: #ffffff;
 }
 
 .stop-badge.complete {
-    background: #16a34a;
+    background: #15803d;
     color: #ffffff;
 }
 
@@ -515,7 +515,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 999px;
-    color: #6b7280;
+    color: #374151;
     background: #f3f4f6;
     text-decoration: none;
 }
@@ -578,22 +578,22 @@
 
 .issue-log .stat-icon.neutral {
     background: #e2e8f0;
-    color: #64748b;
+    color: #334155;
 }
 
 .issue-log .stat-icon.danger {
     background: #fee2e2;
-    color: #ef4444;
+    color: #991b1b;
 }
 
 .issue-log .stat-icon.warning {
     background: #ffedd5;
-    color: #f97316;
+    color: #9a3412;
 }
 
 .issue-log .stat-icon.success {
     background: #dcfce7;
-    color: #16a34a;
+    color: #166534;
 }
 
 /* Filter Panel Styles */
