@@ -59,11 +59,12 @@ public class BinPredictionService : IBinPredictionService
     private async Task<Dictionary<int, List<CollectionDetails>>> GetCollectionHistoryAsync()
     {
         var records = await db.CollectionDetails
-            .Where(cd => cd.BinId != null && cd.CurrentCollectionDateTime != null)
+            .Where(cd => cd.BinId.HasValue && cd.CurrentCollectionDateTime != null)
             .ToListAsync();
 
         return records
-            .GroupBy(cd => cd.BinId!.Value)
+            .Where(cd => cd.BinId.HasValue)
+            .GroupBy(cd => cd.BinId.Value)
             .ToDictionary(
                 g => g.Key,
                 g => g.OrderByDescending(x => x.CurrentCollectionDateTime).Take(2).ToList()
@@ -117,7 +118,7 @@ public class BinPredictionService : IBinPredictionService
         }
 
         // Normal bins with prediction data
-        var predictedGrowth = prediction!.PredictedAvgDailyGrowth;
+        var predictedGrowth = prediction?.PredictedAvgDailyGrowth ?? 0;
         var daysElapsed = Math.Max((today - latestCollectedAt).TotalDays, 0);
         var estimatedFillToday = Math.Clamp(predictedGrowth * daysElapsed, 0, 100);
         var daysTo80 = CalculateDaysTo80Percent(estimatedFillToday, predictedGrowth);
@@ -265,13 +266,13 @@ public class BinPredictionService : IBinPredictionService
         // Fetch next scheduled route stop for each bin (from today onwards)
         var nextRouteStop = await db.RouteStops
             .Where(rs => rs.PlannedCollectionTime >= today && rs.BinId.HasValue)
-            .GroupBy(rs => rs.BinId!.Value)
+            .GroupBy(rs => rs.BinId.Value)
             .Select(g => g.OrderBy(x => x.PlannedCollectionTime).FirstOrDefault())
             .ToListAsync();
 
         var nextStopByBin = nextRouteStop
             .Where(x => x != null && x.BinId.HasValue)
-            .ToDictionary(x => x!.BinId!.Value, x => x!);
+            .ToDictionary(x => x.BinId!.Value, x => x!);
 
         var rows = new List<BinPredictionsTableViewModel>();
 
@@ -299,7 +300,7 @@ public class BinPredictionService : IBinPredictionService
         // calculate avg fill growth rate
         var avgGrowth = rows
             .Where(r => r.PredictedNextAvgDailyGrowth.HasValue)
-            .Select(r => r.PredictedNextAvgDailyGrowth!.Value)
+            .Select(r => r.PredictedNextAvgDailyGrowth.Value)
             .DefaultIfEmpty(0)
             .Average();
 
