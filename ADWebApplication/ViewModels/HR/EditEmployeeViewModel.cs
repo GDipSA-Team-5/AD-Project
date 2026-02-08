@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace ADWebApplication.ViewModels;
 
@@ -13,9 +14,12 @@ public class EditEmployeeViewModel
     [Required, EmailAddress]
     public string Email { get; set; } = "";
 
+    [Required]
+    [JsonRequired]
     public bool IsActive { get; set; }
 
     [Required]
+    [JsonRequired]
     public int RoleId { get; set; }   // ✅ add this
 
     // optional reset password
