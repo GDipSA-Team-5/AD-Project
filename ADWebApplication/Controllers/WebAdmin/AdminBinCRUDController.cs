@@ -10,7 +10,7 @@ namespace ADWebApplication.Controllers
     [Route("Admin")]
     public class AdminBinCrudController : Controller
     {   
-        private const string CollectionOfficerRoster = "~/Views/Admin/CollectionOfficerRoster.cshtml";
+        private const string CollectionOfficerRosterView = "~/Views/Admin/CollectionOfficerRoster.cshtml";
         private readonly IAdminRepository _adminRepository;
 
         public AdminBinCrudController(IAdminRepository adminRepository)
@@ -136,7 +136,7 @@ namespace ADWebApplication.Controllers
             if (!ModelState.IsValid)
             {
                 var allOfficers = await _adminRepository.GetAllCollectionOfficersAsync();
-                return View(CollectionOfficerRoster, allOfficers);
+                return View(CollectionOfficerRosterView, allOfficers);
             }
 
             if (dateFrom.HasValue && dateTo.HasValue)
@@ -144,11 +144,11 @@ namespace ADWebApplication.Controllers
                 var availableOfficers = await _adminRepository
                     .GetAvailableCollectionOfficersAsync(dateFrom.Value, dateTo.Value);
 
-                return View(CollectionOfficerRoster, availableOfficers);
+                return View(CollectionOfficerRosterView, availableOfficers);
             }
 
             var officers = await _adminRepository.GetAllCollectionOfficersAsync();
-            return View(CollectionOfficerRoster, officers);
+            return View(CollectionOfficerRosterView, officers);
         }
 
         [HttpGet("CollectionCalendar")]
@@ -165,7 +165,7 @@ namespace ADWebApplication.Controllers
             if (!ModelState.IsValid)
             {
                 var allOfficers = await _adminRepository.GetAllCollectionOfficersAsync();
-                return View(CollectionOfficerRoster, allOfficers);
+                return View(CollectionOfficerRosterView, allOfficers);
             }
             var available = await _adminRepository
                 .GetAvailableCollectionOfficersCalendarAsync(from, to);
