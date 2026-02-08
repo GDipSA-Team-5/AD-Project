@@ -58,7 +58,7 @@ namespace ADWebApplication.Controllers
         {
             if (!ModelState.IsValid)
             {
-                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                if (Request.Headers.XRequestedWith == "XMLHttpRequest")
                 {
                     var errors = ModelState
                         .Where(entry => entry.Value?.Errors.Count > 0)
@@ -76,7 +76,7 @@ namespace ADWebApplication.Controllers
 
             await _collectorService.ConfirmCollectionAsync(model, username);
 
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            if (Request.Headers.XRequestedWith == "XMLHttpRequest")
             {
                 return Json(new
                 {
