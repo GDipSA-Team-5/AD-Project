@@ -54,11 +54,15 @@ namespace ADWebApplication.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ConfirmCollection(CollectionConfirmationVM model)
+        public async Task<IActionResult> ConfirmCollection(
+            CollectionConfirmationVM model, 
+            [FromHeader(Name = "X-Requested-With")] string? requestedWith = null)
         {
+            bool isAjax = requestedWith == "XMLHttpRequest";
+
             if (!ModelState.IsValid)
             {
-                if (Request.Headers.XRequestedWith == "XMLHttpRequest")
+                if (isAjax)
                 {
                     var errors = ModelState
                         .Where(entry => entry.Value?.Errors.Count > 0)
@@ -76,7 +80,7 @@ namespace ADWebApplication.Controllers
 
             await _collectorService.ConfirmCollectionAsync(model, username);
 
-            if (Request.Headers.XRequestedWith == "XMLHttpRequest")
+            if (isAjax)
             {
                 return Json(new
                 {
@@ -138,7 +142,7 @@ namespace ADWebApplication.Controllers
                 TempData["ErrorMessage"] = "Could not find an active route stop for this bin today.";
             }
             
-            return RedirectToAction("Index");
+            return RedirectToAction("ReportIssue");
         }
 
         [HttpPost]
