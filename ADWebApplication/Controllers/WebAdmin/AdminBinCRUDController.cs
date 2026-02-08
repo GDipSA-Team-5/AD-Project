@@ -10,7 +10,7 @@ namespace ADWebApplication.Controllers
     [Route("Admin")]
     public class AdminBinCrudController : Controller
     {   
-        private const string CollectionOfficerRosterView = "~/Views/Admin/CollectionOfficerRoster.cshtml";
+        private const string CollectionOfficerRosterPath = "~/Views/Admin/CollectionOfficerRoster.cshtml";
         private readonly IAdminRepository _adminRepository;
 
         public AdminBinCrudController(IAdminRepository adminRepository)
@@ -136,7 +136,7 @@ namespace ADWebApplication.Controllers
             if (!ModelState.IsValid)
             {
                 var allOfficers = await _adminRepository.GetAllCollectionOfficersAsync();
-                return View(CollectionOfficerRosterView, allOfficers);
+                return View(CollectionOfficerRosterPath, allOfficers);
             }
 
             if (dateFrom.HasValue && dateTo.HasValue)
@@ -144,11 +144,11 @@ namespace ADWebApplication.Controllers
                 var availableOfficers = await _adminRepository
                     .GetAvailableCollectionOfficersAsync(dateFrom.Value, dateTo.Value);
 
-                return View(CollectionOfficerRosterView, availableOfficers);
+                return View(CollectionOfficerRosterPath, availableOfficers);
             }
 
             var officers = await _adminRepository.GetAllCollectionOfficersAsync();
-            return View(CollectionOfficerRosterView, officers);
+            return View(CollectionOfficerRosterPath, officers);
         }
 
         [HttpGet("CollectionCalendar")]
@@ -165,7 +165,7 @@ namespace ADWebApplication.Controllers
             if (!ModelState.IsValid)
             {
                 var allOfficers = await _adminRepository.GetAllCollectionOfficersAsync();
-                return View(CollectionOfficerRosterView, allOfficers);
+                return View(CollectionOfficerRosterPath, allOfficers);
             }
             var available = await _adminRepository
                 .GetAvailableCollectionOfficersCalendarAsync(from, to);

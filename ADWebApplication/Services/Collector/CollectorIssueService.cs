@@ -19,10 +19,9 @@ namespace ADWebApplication.Services.Collector
 
         public async Task<ReportIssueVM> GetReportIssueViewModelAsync(string username, string? search, string? status, string? priority)
         {
-            var normalizedUsername = username.Trim().ToUpper();
             var today = DateTime.Today;
             var todaysBins = await _db.RouteAssignments
-                .Where(ra => ra.AssignedTo.Trim().ToUpper() == normalizedUsername)
+                .Where(ra => ra.AssignedTo.ToUpper() == username.Trim().ToUpper())
                 .SelectMany(ra => ra.RoutePlans)
                 .Where(rp => rp.PlannedDate.HasValue && rp.PlannedDate.Value.Date == today)
                 .SelectMany(rp => rp.RouteStops)
@@ -44,7 +43,7 @@ namespace ADWebApplication.Services.Collector
                     .ThenInclude(rp => rp!.RouteAssignment)
                 .Where(rs => rs.RoutePlan != null
                           && rs.RoutePlan.RouteAssignment != null
-                          && rs.RoutePlan.RouteAssignment.AssignedTo == username)
+                          && rs.RoutePlan.RouteAssignment.AssignedTo.ToUpper() == username.Trim().ToUpper())
                 .OrderByDescending(rs => rs.RoutePlan!.PlannedDate!)
                 .ToListAsync();
 
@@ -66,23 +65,23 @@ namespace ADWebApplication.Services.Collector
             var filteredIssues = issues.AsEnumerable();
             if (!string.IsNullOrWhiteSpace(search))
             {
-                var term = search.Trim().ToLowerInvariant();
+                var term = search.Trim();
                 filteredIssues = filteredIssues.Where(i =>
-                    i.IssueType.ToLowerInvariant().Contains(term) ||
-                    i.Description.ToLowerInvariant().Contains(term) ||
-                    i.LocationName.ToLowerInvariant().Contains(term) ||
-                    i.Address.ToLowerInvariant().Contains(term) ||
+                    i.IssueType.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                    i.Description.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                    i.LocationName.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                    i.Address.Contains(term, StringComparison.OrdinalIgnoreCase) ||
                     i.BinId.ToString().Contains(term));
             }
 
             if (!string.IsNullOrWhiteSpace(status))
             {
-                filteredIssues = filteredIssues.Where(i => i.Status == status);
+                filteredIssues = filteredIssues.Where(i => string.Equals(i.Status, status, StringComparison.OrdinalIgnoreCase));
             }
 
             if (!string.IsNullOrWhiteSpace(priority))
             {
-                filteredIssues = filteredIssues.Where(i => i.Severity == priority);
+                filteredIssues = filteredIssues.Where(i => string.Equals(i.Severity, priority, StringComparison.OrdinalIgnoreCase));
             }
 
             return new ReportIssueVM
@@ -90,9 +89,9 @@ namespace ADWebApplication.Services.Collector
                 AvailableBins = todaysBins,
                 Issues = filteredIssues.ToList(),
                 TotalIssues = issues.Count,
-                OpenIssues = issues.Count(i => i.Status == "Open"),
-                InProgressIssues = issues.Count(i => i.Status == "In Progress"),
-                ResolvedIssues = issues.Count(i => i.Status == "Resolved"),
+                OpenIssues = issues.Count(i => string.Equals(i.Status, CollectorConstants.StatusOpen, StringComparison.OrdinalIgnoreCase)),
+                InProgressIssues = issues.Count(i => string.Equals(i.Status, CollectorConstants.StatusInProgress, StringComparison.OrdinalIgnoreCase)),
+                ResolvedIssues = issues.Count(i => string.Equals(i.Status, CollectorConstants.StatusResolved, StringComparison.OrdinalIgnoreCase)),
                 Search = search,
                 StatusFilter = status,
                 PriorityFilter = priority
@@ -101,7 +100,6 @@ namespace ADWebApplication.Services.Collector
 
         public async Task<bool> SubmitIssueAsync(ReportIssueVM model, string username)
         {
-            var normalizedUsername = username.Trim().ToUpper();
             var today = DateTime.Today;
             var stop = await _db.RouteStops
                 .Include(rs => rs.RoutePlan)
@@ -109,14 +107,14 @@ namespace ADWebApplication.Services.Collector
                 .Where(rs => rs.BinId == model.BinId
                           && rs.RoutePlan != null
                           && rs.RoutePlan.RouteAssignment != null
-                          && rs.RoutePlan.RouteAssignment.AssignedTo.Trim().ToUpper() == normalizedUsername
+                          && rs.RoutePlan.RouteAssignment.AssignedTo.ToUpper() == username.Trim().ToUpper()
                           && rs.RoutePlan.PlannedDate.HasValue
                           && rs.RoutePlan.PlannedDate.Value.Date == today)
                 .FirstOrDefaultAsync();
 
             if (stop == null) return false;
 
-            var newIssue = $"type: {model.IssueType}; severity: {model.Severity}; status: Open; description: {model.Description}";
+            var newIssue = $"type: {model.IssueType}; severity: {model.Severity}; status: {CollectorConstants.StatusOpen}; description: {model.Description}";
 
             if (string.IsNullOrWhiteSpace(stop.IssueLog))
                 stop.IssueLog = newIssue;
@@ -129,7 +127,6 @@ namespace ADWebApplication.Services.Collector
 
         public async Task<string> StartIssueWorkAsync(int stopId, string username)
         {
-            var normalizedUsername = username.Trim().ToUpper();
             var stop = await _db.RouteStops
                 .Include(rs => rs.CollectionDetails)
                 .Include(rs => rs.RoutePlan)
@@ -137,7 +134,7 @@ namespace ADWebApplication.Services.Collector
                 .Where(rs => rs.StopId == stopId
                           && rs.RoutePlan != null
                           && rs.RoutePlan.RouteAssignment != null
-                          && rs.RoutePlan.RouteAssignment.AssignedTo.Trim().ToUpper() == normalizedUsername)
+                          && rs.RoutePlan.RouteAssignment.AssignedTo.ToUpper() == username.Trim().ToUpper())
                 .FirstOrDefaultAsync();
 
             if (stop == null) return "Issue not found for this route.";
@@ -150,9 +147,9 @@ namespace ADWebApplication.Services.Collector
             var currentLog = latestDetail?.IssueLog ?? stop.IssueLog ?? string.Empty;
             var currentStatus = ExtractValue(currentLog, "status") ?? InferStatus(currentLog);
 
-            if (currentStatus == "Resolved") return "Issue is already resolved.";
+            if (string.Equals(currentStatus, CollectorConstants.StatusResolved, StringComparison.OrdinalIgnoreCase)) return "Issue is already resolved.";
 
-            var newStatus = currentStatus == "In Progress" ? "Resolved" : "In Progress";
+            var newStatus = string.Equals(currentStatus, CollectorConstants.StatusInProgress, StringComparison.OrdinalIgnoreCase) ? CollectorConstants.StatusResolved : CollectorConstants.StatusInProgress;
 
             if (latestDetail != null)
             {
@@ -234,18 +231,16 @@ namespace ADWebApplication.Services.Collector
 
         private static string InferSeverity(string input)
         {
-            var lower = input.ToLowerInvariant();
-            if (lower.Contains("high")) return "High";
-            if (lower.Contains("low")) return "Low";
+            if (input.Contains("high", StringComparison.OrdinalIgnoreCase)) return "High";
+            if (input.Contains("low", StringComparison.OrdinalIgnoreCase)) return "Low";
             return "Medium";
         }
 
         private static string InferStatus(string input)
         {
-            var lower = input.ToLowerInvariant();
-            if (lower.Contains("resolved") || lower.Contains("closed")) return "Resolved";
-            if (lower.Contains("progress")) return "In Progress";
-            return "Open";
+            if (input.Contains("resolved", StringComparison.OrdinalIgnoreCase) || input.Contains("closed", StringComparison.OrdinalIgnoreCase)) return CollectorConstants.StatusResolved;
+            if (input.Contains("progress", StringComparison.OrdinalIgnoreCase)) return CollectorConstants.StatusInProgress;
+            return CollectorConstants.StatusOpen;
         }
 
         #endregion

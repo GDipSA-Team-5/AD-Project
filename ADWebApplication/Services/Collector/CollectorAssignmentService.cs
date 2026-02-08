@@ -8,7 +8,6 @@ namespace ADWebApplication.Services.Collector
     public class CollectorAssignmentService : ICollectorAssignmentService
     {
         private readonly In5niteDbContext _db;
-        private const string StatusCollected = "Collected";
 
         public CollectorAssignmentService(In5niteDbContext db)
         {
@@ -25,7 +24,7 @@ namespace ADWebApplication.Services.Collector
                     .ThenInclude(rs => rs.CollectionBin)
                         .ThenInclude(cb => cb!.Region)
                 .Where(rp => rp.RouteAssignment != null && 
-                           rp.RouteAssignment.AssignedTo.Trim().ToUpper() == username.Trim().ToUpper() &&
+                           rp.RouteAssignment.AssignedTo.ToUpper() == username.Trim().ToUpper() &&
                            rp.PlannedDate.HasValue);
 
             // 1. Search Filter (ID or Location)
@@ -50,9 +49,9 @@ namespace ADWebApplication.Services.Collector
             // 4. Status Filter (including our Pending/Scheduled fix)
             if (!string.IsNullOrWhiteSpace(status))
             {
-                if (string.Equals(status, "Pending", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(status, CollectorConstants.StatusPending, StringComparison.OrdinalIgnoreCase))
                 {
-                    query = query.Where(rp => rp.RouteStatus == "Pending" || rp.RouteStatus == "Scheduled");
+                    query = query.Where(rp => rp.RouteStatus == CollectorConstants.StatusPending || rp.RouteStatus == CollectorConstants.StatusScheduled);
                 }
                 else
                 {
@@ -71,7 +70,7 @@ namespace ADWebApplication.Services.Collector
                     AssignmentId = rp.AssignmentId,
                     AssignedBy = rp.RouteAssignment!.AssignedBy,
                     AssignedTo = rp.RouteAssignment!.AssignedTo,
-                    Status = rp.RouteStatus ?? "Pending",
+                    Status = rp.RouteStatus ?? CollectorConstants.StatusPending,
                     RouteId = rp.RouteId,
                     PlannedDate = rp.PlannedDate ?? DateTime.Today,
                     RouteStatus = rp.RouteStatus,
@@ -81,7 +80,7 @@ namespace ADWebApplication.Services.Collector
                             : null)
                         .FirstOrDefault(),
                     TotalStops = rp.RouteStops.Count,
-                    CompletedStops = rp.RouteStops.Count(rs => rs.CollectionDetails.Any(cd => cd.CollectionStatus == StatusCollected))
+                    CompletedStops = rp.RouteStops.Count(rs => rs.CollectionDetails.Any(cd => cd.CollectionStatus == CollectorConstants.StatusCollected))
                 })
                 .ToListAsync();
 
@@ -113,7 +112,7 @@ namespace ADWebApplication.Services.Collector
                 .Include(ra => ra.RoutePlans)
                     .ThenInclude(rp => rp.RouteStops)
                         .ThenInclude(rs => rs!.CollectionDetails)
-                .Where(ra => ra.AssignmentId == assignmentId && ra.AssignedTo == username)
+                .Where(ra => ra.AssignmentId == assignmentId && ra.AssignedTo.ToUpper() == username.Trim().ToUpper())
                 .FirstOrDefaultAsync();
 
             if (assignment == null) return null;
@@ -137,7 +136,7 @@ namespace ADWebApplication.Services.Collector
                         BinId = rs.CollectionBin?.BinId ?? 0,
                         LocationName = rs.CollectionBin?.LocationName,
                         RegionName = rs.CollectionBin?.Region?.RegionName,
-                        IsCollected = latestCollection?.CollectionStatus == StatusCollected,
+                        IsCollected = latestCollection?.CollectionStatus == CollectorConstants.StatusCollected,
                         CollectedAt = latestCollection?.CurrentCollectionDateTime?.DateTime,
                         CollectionStatus = latestCollection?.CollectionStatus,
                         BinFillLevel = latestCollection?.BinFillLevel
@@ -165,7 +164,7 @@ namespace ADWebApplication.Services.Collector
                 .Include(ra => ra.RoutePlans)
                     .ThenInclude(rp => rp.RouteStops)
                         .ThenInclude(rs => rs.CollectionDetails)
-                .Where(ra => ra.AssignedTo == username
+                .Where(ra => ra.AssignedTo.ToUpper() == username.Trim().ToUpper()
                           && ra.RoutePlans.Any(rp => 
                               rp.PlannedDate.HasValue
                               && rp.PlannedDate.Value.Date == DateTime.Today 
@@ -179,7 +178,7 @@ namespace ADWebApplication.Services.Collector
             if (route == null) return null;
 
             var nextStops = route.RouteStops
-                .Where(rs => !rs.CollectionDetails.Any(cd => cd.CollectionStatus == StatusCollected))
+                .Where(rs => !rs.CollectionDetails.Any(cd => cd.CollectionStatus == CollectorConstants.StatusCollected))
                 .OrderBy(rs => rs.StopSequence)
                 .Take(top)
                 .Select(rs => new RouteStopDisplayItem
@@ -193,7 +192,7 @@ namespace ADWebApplication.Services.Collector
                 }).ToList();
 
             var totalPending = route.RouteStops
-                .Count(rs => !rs.CollectionDetails.Any(cd => cd.CollectionStatus == StatusCollected));
+                .Count(rs => !rs.CollectionDetails.Any(cd => cd.CollectionStatus == CollectorConstants.StatusCollected));
 
             return new NextStopsViewModel
             {

@@ -17,7 +17,6 @@ namespace ADWebApplication.Services.Collector
         public async Task<CollectorRoute> GetDailyRouteAsync(string username)
         {
             var today = DateTime.Today;
-            var normalizedUsername = username.Trim().ToUpper();
             var assignment = await _db.RouteAssignments
                 .Include(ra => ra.RoutePlans)
                     .ThenInclude(rp => rp.RouteStops)
@@ -27,7 +26,7 @@ namespace ADWebApplication.Services.Collector
                     .ThenInclude(rp => rp.RouteStops)
                         .ThenInclude(rs => rs.CollectionDetails)
                 .AsSplitQuery()
-                .Where(ra => ra.AssignedTo.Trim().ToUpper() == normalizedUsername
+                .Where(ra => ra.AssignedTo.ToUpper() == username.Trim().ToUpper()
                           && ra.RoutePlans!.Any(rp => rp.PlannedDate.HasValue && rp.PlannedDate.Value.Date == today))
                 .FirstOrDefaultAsync();
 
@@ -38,7 +37,7 @@ namespace ADWebApplication.Services.Collector
                     RouteName = "No Route Assigned",
                     Zone = "-",
                     ScheduledDate = today,
-                    Status = "Pending",
+                    Status = CollectorConstants.StatusPending,
                     CollectionPoints = new List<CollectionPoint>()
                 };
             }
@@ -53,7 +52,7 @@ namespace ADWebApplication.Services.Collector
                     RouteName = "No Route Assigned",
                     Zone = "-",
                     ScheduledDate = today,
-                    Status = "Pending",
+                    Status = CollectorConstants.StatusPending,
                     CollectionPoints = new List<CollectionPoint>()
                 };
             }
@@ -94,7 +93,7 @@ namespace ADWebApplication.Services.Collector
                     PlannedCollectionTime = plannedTime,
                     EstimatedTimeMins = estimatedMinutes,
                     CurrentFillLevel = latestCollection?.BinFillLevel ?? 0,
-                    Status = latestCollection?.CollectionStatus == "Collected" ? "Collected" : "Pending",
+                    Status = string.Equals(latestCollection?.CollectionStatus, CollectorConstants.StatusCollected, StringComparison.OrdinalIgnoreCase) ? CollectorConstants.StatusCollected : CollectorConstants.StatusPending,
                     CollectedAt = latestCollection?.CurrentCollectionDateTime?.DateTime
                 });
 
@@ -107,14 +106,13 @@ namespace ADWebApplication.Services.Collector
                 RouteName = $"Route #{routePlan.RouteId}",
                 Zone = orderedStops.FirstOrDefault()?.CollectionBin?.Region?.RegionName ?? "Assigned Route",
                 ScheduledDate = routePlan.PlannedDate ?? today,
-                Status = routePlan.RouteStatus ?? "Pending",
+                Status = routePlan.RouteStatus ?? CollectorConstants.StatusPending,
                 CollectionPoints = points
             };
         }
 
         public async Task<CollectionConfirmationVM?> GetCollectionConfirmationAsync(int stopId, string username)
         {
-            var normalizedUsername = username.Trim().ToUpper();
             var stop = await _db.RouteStops
                 .Include(rs => rs.CollectionBin)
                     .ThenInclude(cb => cb!.Region)
@@ -122,7 +120,7 @@ namespace ADWebApplication.Services.Collector
                 .Include(rs => rs.RoutePlan)
                     .ThenInclude(rp => rp!.RouteAssignment)
                 .Where(rs => rs.StopId == stopId && rs.RoutePlan != null && rs.RoutePlan.RouteAssignment != null)
-                .Where(rs => rs.RoutePlan!.RouteAssignment!.AssignedTo.Trim().ToUpper() == normalizedUsername)
+                .Where(rs => rs.RoutePlan!.RouteAssignment!.AssignedTo.ToUpper() == username.Trim().ToUpper())
                 .FirstOrDefaultAsync();
 
             if (stop == null) return null;
@@ -152,10 +150,9 @@ namespace ADWebApplication.Services.Collector
         // =========================
         public async Task<bool> ConfirmCollectionAsync(CollectionConfirmationVM model, string username)
         {
-            var normalizedUsername = username.Trim().ToUpper();
             var today = DateTime.Today;
 
-            var stop = await FindStopForConfirmationAsync(model.StopId, normalizedUsername, today);
+            var stop = await FindStopForConfirmationAsync(model.StopId, username, today);
             if (stop == null) return false;
 
             var latestCollection = GetLatestCollection(stop);
@@ -167,7 +164,7 @@ namespace ADWebApplication.Services.Collector
                 LastCollectionDateTime = latestCollection?.CurrentCollectionDateTime,
                 CurrentCollectionDateTime = DateTimeOffset.Now,
                 BinFillLevel = model.BinFillLevel,
-                CollectionStatus = "Collected",
+                CollectionStatus = CollectorConstants.StatusCollected,
                 IssueLog = model.Remarks
             };
 
@@ -186,7 +183,7 @@ namespace ADWebApplication.Services.Collector
 
         // ===== Helpers (to reduce Sonar cognitive complexity) =====
 
-        private Task<RouteStop?> FindStopForConfirmationAsync(int stopId, string normalizedUsername, DateTime today)
+        private Task<RouteStop?> FindStopForConfirmationAsync(int stopId, string username, DateTime today)
         {
             return _db.RouteStops
                 .Include(rs => rs.CollectionDetails)
@@ -195,7 +192,7 @@ namespace ADWebApplication.Services.Collector
                 .Where(rs => rs.StopId == stopId
                           && rs.RoutePlan != null
                           && rs.RoutePlan.RouteAssignment != null
-                          && rs.RoutePlan.RouteAssignment.AssignedTo.Trim().ToUpper() == normalizedUsername
+                          && rs.RoutePlan.RouteAssignment.AssignedTo.ToUpper() == username.Trim().ToUpper()
                           && rs.RoutePlan.PlannedDate.HasValue
                           && rs.RoutePlan.PlannedDate.Value.Date == today)
                 .FirstOrDefaultAsync();
@@ -211,9 +208,9 @@ namespace ADWebApplication.Services.Collector
         private async Task UpdateRouteStatusAndNextStopAsync(RouteStop stop, CollectionConfirmationVM model)
         {
             // 1) Pending -> In Progress
-            if (stop.RoutePlan!.RouteStatus == "Pending")
+            if (string.Equals(stop.RoutePlan!.RouteStatus, CollectorConstants.StatusPending, StringComparison.OrdinalIgnoreCase))
             {
-                stop.RoutePlan.RouteStatus = "In Progress";
+                stop.RoutePlan.RouteStatus = CollectorConstants.StatusInProgress;
             }
 
             // 2) Load all stops (Include CollectionBin because we read NextLocationName/NextAddress)
@@ -243,7 +240,7 @@ namespace ADWebApplication.Services.Collector
         {
             var completedCount = allStops.Count(rs =>
                 rs.StopId == currentStopId ||
-                rs.CollectionDetails.Any(cd => cd.CollectionStatus == "Collected")
+                rs.CollectionDetails.Any(cd => string.Equals(cd.CollectionStatus, CollectorConstants.StatusCollected, StringComparison.OrdinalIgnoreCase))
             );
 
             return completedCount == allStops.Count;
@@ -261,7 +258,7 @@ namespace ADWebApplication.Services.Collector
             for (var i = currentIndex + 1; i < orderedStops.Count; i++)
             {
                 var nextStop = orderedStops[i];
-                var hasCollected = nextStop.CollectionDetails.Any(cd => cd.CollectionStatus == "Collected");
+                var hasCollected = nextStop.CollectionDetails.Any(cd => string.Equals(cd.CollectionStatus, CollectorConstants.StatusCollected, StringComparison.OrdinalIgnoreCase));
 
                 if (!hasCollected)
                 {
