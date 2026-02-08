@@ -54,11 +54,15 @@ namespace ADWebApplication.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ConfirmCollection(CollectionConfirmationVM model)
+        public async Task<IActionResult> ConfirmCollection(
+            CollectionConfirmationVM model, 
+            [FromHeader(Name = "X-Requested-With")] string? requestedWith = null)
         {
+            bool isAjax = requestedWith == "XMLHttpRequest";
+
             if (!ModelState.IsValid)
             {
-                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                if (isAjax)
                 {
                     var errors = ModelState
                         .Where(entry => entry.Value?.Errors.Count > 0)
@@ -76,7 +80,7 @@ namespace ADWebApplication.Controllers
 
             await _collectorService.ConfirmCollectionAsync(model, username);
 
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            if (isAjax)
             {
                 return Json(new
                 {

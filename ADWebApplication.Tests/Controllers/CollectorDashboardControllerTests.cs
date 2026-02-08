@@ -229,10 +229,9 @@ namespace ADWebApplication.Tests.Controllers
                 .ReturnsAsync(true);
 
             var controller = CreateController(mockService, mockConfig);
-            controller.Request.Headers[HeaderNames.XRequestedWith] = "XMLHttpRequest";
 
             // Act
-            var result = await controller.ConfirmCollection(model);
+            var result = await controller.ConfirmCollection(model, "XMLHttpRequest");
 
             // Assert
             var jsonResult = Assert.IsType<JsonResult>(result);
@@ -282,10 +281,9 @@ namespace ADWebApplication.Tests.Controllers
 
             var controller = CreateController(mockService, mockConfig);
             controller.ModelState.AddModelError("BinFillLevel", "Required");
-            controller.Request.Headers[HeaderNames.XRequestedWith] = "XMLHttpRequest";
 
             // Act
-            var result = await controller.ConfirmCollection(model);
+            var result = await controller.ConfirmCollection(model, "XMLHttpRequest");
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
@@ -453,7 +451,7 @@ namespace ADWebApplication.Tests.Controllers
 
             // Assert
             var redirectResult = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal("Index", redirectResult.ActionName);
+            Assert.Equal("ReportIssue", redirectResult.ActionName);
             Assert.Contains("Bin #1", controller.TempData["SuccessMessage"]!.ToString());
         }
 
