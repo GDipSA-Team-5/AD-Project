@@ -58,9 +58,6 @@ namespace ADWebApplication.Controllers
                 _logger.LogInformation("Performance retrieved: {Count} records", performance.Count);
                 }
 
-                // var highRisk = await _dashboardRepository.GetHighRiskUnscheduledCountAsync();
-                // _logger.LogInformation("High risk count: {Count}", highRisk);
-
                 var binCounts = await _dashboardRepository.GetBinCountsAsync();
                 if(_logger.IsEnabled(LogLevel.Information))
                 {
