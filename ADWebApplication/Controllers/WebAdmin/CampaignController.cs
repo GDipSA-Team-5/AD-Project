@@ -14,6 +14,7 @@ namespace ADWebApplication.Controllers
         private const string SuccessMessageKey = "SuccessMessage";
         private const string ErrorMessageKey = "ErrorMessage";
         private const string IndexAction = "Index";
+        private const string InvalidCampaignIdMessage = "Invalid campaign ID.";
         private readonly ICampaignService _campaignService;
 
         public CampaignController(ICampaignService campaignService)
@@ -72,7 +73,7 @@ namespace ADWebApplication.Controllers
             //Validate Id parameter
             if (id <= 0)
             {
-                TempData[ErrorMessageKey] = "Invalid campaign ID.";
+                TempData[ErrorMessageKey] = InvalidCampaignIdMessage;
                 return RedirectToAction(IndexAction);
             }
             var campaign = await _campaignService.GetCampaignByIdAsync(id);
@@ -115,7 +116,7 @@ namespace ADWebApplication.Controllers
             }
             if (id <= 0)
             {
-                TempData[ErrorMessageKey] = "Invalid campaign ID.";
+                TempData[ErrorMessageKey] = InvalidCampaignIdMessage;
                 return RedirectToAction(IndexAction);
             }
             try
@@ -141,7 +142,7 @@ namespace ADWebApplication.Controllers
             }
             if (id <= 0)
             {
-                TempData[ErrorMessageKey] = "Invalid campaign ID.";
+                TempData[ErrorMessageKey] = InvalidCampaignIdMessage;
                 return RedirectToAction(IndexAction);
             }
         try
@@ -166,7 +167,7 @@ namespace ADWebApplication.Controllers
             }
             if (id <= 0)
             {
-                TempData[ErrorMessageKey] = "Invalid campaign ID.";
+                TempData[ErrorMessageKey] = InvalidCampaignIdMessage;
                 return RedirectToAction(IndexAction);
             }
         try

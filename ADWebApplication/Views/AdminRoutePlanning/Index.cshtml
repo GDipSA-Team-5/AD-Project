@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Route Management";
-    Layout = "_DashboardLayout";
+    Layout = "_AdminLayout";
 
     var activeOfficerIds = Model.AllStops
     .Select(s => s.RouteKey)
