@@ -182,7 +182,7 @@ namespace ADWebApplication.Services
             {
                 throw new InvalidOperationException("Campaign cannot be activated outside its start and end dates.");
             }
-            campaign.Status = "Active";
+            campaign.Status = "ACTIVE";
             var result = await _campaignRepository.UpdateCampaignAsync(campaign);
     
             if (result)
@@ -212,7 +212,7 @@ namespace ADWebApplication.Services
             if (campaign == null)
                 return false;
             
-            campaign.Status = "Inactive";
+            campaign.Status = "INACTIVE";
             var result = await _campaignRepository.UpdateCampaignAsync(campaign);
     
             if (result)
