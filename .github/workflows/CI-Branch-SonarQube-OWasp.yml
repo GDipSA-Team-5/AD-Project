@@ -155,9 +155,9 @@ jobs:
           name: dependency-check-report
           path: ./dependency-check-report
 
-  # =========================================================
-  # JOB 2: OWASP ZAP Scan
-  # =========================================================
+# =========================================================
+# JOB 2: OWASP ZAP Scan
+# =========================================================
   dast-scan:
     needs: build-and-sast-sca-scan
     runs-on: ubuntu-latest
@@ -167,21 +167,40 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # ---- Setup .NET ----
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
       # ---- Publish app locally ----
       - name: Publish App
         run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --output publish
 
       # ---- Start app locally in the background ----
       - name: Run App Locally
+        env:
+          SKIP_KEYVAULT_IN_TESTS: "true"
+          ASPNETCORE_ENVIRONMENT: "Development"
         run: |
-          nohup dotnet publish/ADWebApplication.dll &  # Start the app in the background
+          nohup dotnet publish/ADWebApplication.dll &
           echo "Waiting for app to start..."
           
-          # Check if the app is running on http://localhost:5000 before proceeding
-          until curl -s http://localhost:5000 > /dev/null; do
-            echo "Waiting for app to start..."
-            sleep 2  # Check every 2 seconds
+          # Wait up to 60 seconds for the app to start
+          timeout=60
+          elapsed=0
+          until curl -s http://localhost:5000 > /dev/null || [ $elapsed -eq $timeout ]; do
+            echo "Waiting for app to start... ($elapsed/$timeout seconds)"
+            sleep 2
+            elapsed=$((elapsed + 2))
           done
+          
+          if [ $elapsed -eq $timeout ]; then
+            echo "App failed to start within $timeout seconds"
+            cat nohup.out  # Show error logs
+            exit 1
+          fi
+          
           echo "App is running!"
 
       # ---- Run ZAP Baseline Scan ----
