@@ -7,8 +7,8 @@ on:
       - completed
 
 env:
-  AZURE_WEBAPP_NAME: in5nite-app
-  ACR_NAME: in5niteacr
+  AZURE_WEBAPP_NAME: in5nite
+  ACR_NAME: in5nite
   IMAGE_NAME: adwebapp
   CONTAINER_PORT: 8080
 
