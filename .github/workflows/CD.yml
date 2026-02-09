@@ -7,53 +7,81 @@ on:
       - completed
 
 env:
-  AZURE_WEBAPP_NAME: in5nite
-  DOTNET_VERSION: '10.0.x'
-  PROJECT_PATH: './ADWebApplication/ADWebApplication.csproj'
+  AZURE_WEBAPP_NAME: in5nite-app
+  ACR_NAME: in5niteacr
+  IMAGE_NAME: adwebapp
+  CONTAINER_PORT: 8080
 
 jobs:
   deploy:
-    # Only deploy if the CI run was on main branch
     if: |
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.head_branch == 'main'
-    runs-on: ubuntu-latest        # <-- Use Linux runner for ZAP Docker
+    runs-on: ubuntu-latest
     environment: production
 
     steps:
+      # Checkout repo
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+      # Azure login via service principal
+      - name: Azure Login
+        uses: azure/login@v1
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Restore
-        run: dotnet restore ${{ env.PROJECT_PATH }}
+      # Login to ACR
+      - name: Login to ACR
+        run: az acr login --name ${{ env.ACR_NAME }}
 
-      - name: Build
-        run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore
+      # Build Docker image (tagged with SHA and latest)
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest \
+            -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            .
 
-      - name: Publish
-        run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --output publish
+      # Push both tags to ACR
+      - name: Push Docker images to ACR
+        run: |
+          docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
+          docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
-      - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: publish
-      
-      # Wait for the app to be fully deployed and running
+      # Deploy to Azure Web App (pull SHA tag for immutable deploy)
+      - name: Deploy container to Azure Web App
+        run: |
+          az webapp config container set \
+            --name ${{ env.AZURE_WEBAPP_NAME }} \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --docker-custom-image-name ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            --docker-registry-server-url https://${{ env.ACR_NAME }}.azurecr.io
+
+      # Wait for the Web App to start
       - name: Wait 2 minutes for app to stabilize
-        run: sleep 120    # 120 seconds = 2 minutes
+        run: sleep 120
 
-      # Run ZAP DAST scan
-      - name: Run OWASP ZAP DAST on deployed app
+      # Health check using /health endpoint
+      - name: Health check
+        run: |
+          URL="https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/health"
+          echo "Checking health endpoint: $URL"
+          for i in {1..10}; do
+            if curl -fsS $URL; then
+              echo "Health check passed"
+              break
+            else
+              echo "Waiting for app to become healthy..."
+              sleep 15
+            fi
+          done
+
+      # Run OWASP ZAP DAST scan
+      - name: Run OWASP ZAP DAST
         uses: zaproxy/action-baseline@4ea3deb659d9a669dc5e5c10c49a423e8bb41420
         with:
-          target: "https://in5nite-e8d9b0g5cad9hrbg.southeastasia-01.azurewebsites.net/"
+          target: "https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/"
           fail_action: false
           artifact_name: zap-live-report
           cmd_options: >
