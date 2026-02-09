@@ -31,8 +31,13 @@ builder.Services.AddScoped<IRewardCatalogueRepository, RewardCatalogueRepository
 // Azure Key Vault integration
 builder.Configuration.AddEnvironmentVariables();
 
-// 2. Add Key Vault only in cloud version
-if (!builder.Environment.IsDevelopment())
+// Check if we should skip Key Vault (for CI/CD and testing)
+var skipKeyVault = Environment.GetEnvironmentVariable("SKIP_KEYVAULT_IN_TESTS");
+var shouldSkipKeyVault = !string.IsNullOrEmpty(skipKeyVault) && 
+                         skipKeyVault.Equals("true", StringComparison.OrdinalIgnoreCase);
+
+// Add Key Vault only in non-development environments and when not explicitly skipped
+if (!builder.Environment.IsDevelopment() && !shouldSkipKeyVault)
 {
     var keyVaultUrl = new Uri("https://in5nite-kv.vault.azure.net/");
     builder.Configuration.AddAzureKeyVault(
