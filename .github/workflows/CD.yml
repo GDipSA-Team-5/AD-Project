@@ -7,9 +7,10 @@ on:
       - completed
 
 env:
-  AZURE_WEBAPP_NAME: in5nite
-  ACR_NAME: in5nite
-  IMAGE_NAME: ad-web-app
+  AZURE_WEBAPP_NAME: in5nite       
+  ACR_NAME: in5nite                
+  IMAGE_NAME: ad-web-app           
+  IMAGE_TAG: v1                    
   CONTAINER_PORT: 8080
 
 jobs:
@@ -33,19 +34,18 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
-      # Build Docker image (tagged with SHA and latest)
+      # Build Docker image
       - name: Build Docker image
         run: |
           docker build \
-            -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest \
-            -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} \
-            .
+            -f ADWebApplication/Dockerfile \
+            -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
+            ADWebApplication
 
-      # Push both tags to ACR
-      - name: Push Docker images to ACR
+      # Push Docker image to ACR
+      - name: Push Docker image to ACR
         run: |
-          docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
-          docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
       # Deploy to Azure Web App using publish profile
       - name: Deploy container to Azure Web App
@@ -53,7 +53,7 @@ jobs:
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          images: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          images: ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
       # Wait for the Web App to start
       - name: Wait 2 minutes for app to stabilize
