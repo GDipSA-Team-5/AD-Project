@@ -9,7 +9,7 @@ on:
 env:
   AZURE_WEBAPP_NAME: in5nite
   ACR_NAME: in5nite
-  IMAGE_NAME: adwebapp
+  IMAGE_NAME: ad-web-app
   CONTAINER_PORT: 8080
 
 jobs:
