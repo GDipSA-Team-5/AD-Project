@@ -214,40 +214,77 @@ jobs:
             -r report_html.html
           allow_issue_writing: false
 
+      # ZAP Scan ML Service
+      - name: ZAP Scan ML Service
+        uses: zaproxy/action-baseline@4ea3deb659d9a669dc5e5c10c49a423e8bb41420
+        with:
+          target: 'https://in5nite-ml-fdcycfe6gkfnhdg2.southeastasia-01.azurewebsites.net'
+          cmd_options: '-J zap-ml.json'
+          fail_action: false
+
       - name: Copy ZAP reports
         run: |
+          # DOTNET
           if [ -f report_json.json ]; then
             cp report_json.json ./zap.json
           elif [ -f /zap/wrk/report_json.json ]; then
             sudo cp /zap/wrk/report_json.json ./zap.json
           else
-            echo "Warning: ZAP JSON report not found"
             echo '{"site":[{"alerts":[]}]}' > zap.json
           fi
 
-          if [ -f report_html.html ]; then
-            cp report_html.html ./zap.html
-          elif [ -f /zap/wrk/report_html.html ]; then
-            sudo cp /zap/wrk/report_html.html ./zap.html
+          # ML
+          if [ -f zap-ml.json ]; then
+            cp zap-ml.json ./zap-ml.json
+          elif [ -f /zap/wrk/zap-ml.json ]; then
+            sudo cp /zap/wrk/zap-ml.json ./zap-ml.json
+          else
+            echo '{"site":[{"alerts":[]}]}' > zap-ml.json
           fi
 
-      - name: Parse ZAP
+      - name: Parse ZAP (Aggregate .NET + ML)
         id: zap
         run: |
+
+          # ---------------- DOTNET ----------------
           if [ -f zap.json ]; then
-            HIGH=$(jq '[.site[].alerts[]? | select(.riskcode=="3")] | length' zap.json)
-            MEDIUM=$(jq '[.site[].alerts[]? | select(.riskcode=="2")] | length' zap.json)
-            LOW=$(jq '[.site[].alerts[]? | select(.riskcode=="1")] | length' zap.json)
-            TOTAL=$(jq '[.site[].alerts[]?] | length' zap.json)
+            HIGH_DOTNET=$(jq '[.site[].alerts[]? | select(.riskcode=="3")] | length' zap.json)
+            MEDIUM_DOTNET=$(jq '[.site[].alerts[]? | select(.riskcode=="2")] | length' zap.json)
+            LOW_DOTNET=$(jq '[.site[].alerts[]? | select(.riskcode=="1")] | length' zap.json)
           else
-            echo "zap.json not found, using zeros"
-            HIGH=0; MEDIUM=0; LOW=0; TOTAL=0
+            HIGH_DOTNET=0; MEDIUM_DOTNET=0; LOW_DOTNET=0
           fi
+
+          # ---------------- ML ----------------
+          if [ -f zap-ml.json ]; then
+            HIGH_ML=$(jq '[.site[].alerts[]? | select(.riskcode=="3")] | length' zap-ml.json)
+            MEDIUM_ML=$(jq '[.site[].alerts[]? | select(.riskcode=="2")] | length' zap-ml.json)
+            LOW_ML=$(jq '[.site[].alerts[]? | select(.riskcode=="1")] | length' zap-ml.json)
+          else
+            HIGH_ML=0; MEDIUM_ML=0; LOW_ML=0
+          fi
+
+          # ---------------- AGGREGATE ----------------
+          HIGH=$((HIGH_DOTNET + HIGH_ML))
+          MEDIUM=$((MEDIUM_DOTNET + MEDIUM_ML))
+          LOW=$((LOW_DOTNET + LOW_ML))
+          TOTAL=$((HIGH + MEDIUM + LOW))
+
+          # expose aggregated
           echo "high=$HIGH" >> $GITHUB_OUTPUT
           echo "medium=$MEDIUM" >> $GITHUB_OUTPUT
           echo "low=$LOW" >> $GITHUB_OUTPUT
           echo "total=$TOTAL" >> $GITHUB_OUTPUT
-          echo "ZAP Results: High=$HIGH, Medium=$MEDIUM, Low=$LOW, Total=$TOTAL"
+
+          # expose dotnet
+          echo "high_dotnet=$HIGH_DOTNET" >> $GITHUB_OUTPUT
+          echo "medium_dotnet=$MEDIUM_DOTNET" >> $GITHUB_OUTPUT
+          echo "low_dotnet=$LOW_DOTNET" >> $GITHUB_OUTPUT
+
+          # expose ml
+          echo "high_ml=$HIGH_ML" >> $GITHUB_OUTPUT
+          echo "medium_ml=$MEDIUM_ML" >> $GITHUB_OUTPUT
+          echo "low_ml=$LOW_ML" >> $GITHUB_OUTPUT
 
       - name: Save ZAP Metadata
         run: |
@@ -259,10 +296,22 @@ jobs:
             "branch": "${{ github.ref_name }}",
             "commit": "${{ github.sha }}",
             "zap": {
-              "high": "${{ steps.zap.outputs.high }}",
-              "medium": "${{ steps.zap.outputs.medium }}",
-              "low": "${{ steps.zap.outputs.low }}",
-              "total": "${{ steps.zap.outputs.total }}"
+              "dotnet": {
+                "high": "${{ steps.zap.outputs.high_dotnet }}",
+                "medium": "${{ steps.zap.outputs.medium_dotnet }}",
+                "low": "${{ steps.zap.outputs.low_dotnet }}"
+              },
+              "ml": {
+                "high": "${{ steps.zap.outputs.high_ml }}",
+                "medium": "${{ steps.zap.outputs.medium_ml }}",
+                "low": "${{ steps.zap.outputs.low_ml }}"
+              },
+              "total": {
+                "high": "${{ steps.zap.outputs.high }}",
+                "medium": "${{ steps.zap.outputs.medium }}",
+                "low": "${{ steps.zap.outputs.low }}",
+                "total": "${{ steps.zap.outputs.total }}"
+              }
             }
           }
           EOF
