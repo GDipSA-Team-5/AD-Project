@@ -4,6 +4,7 @@ using ADWebApplication.Models.DTOs;
 using ADWebApplication.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Dynamic;
 
 namespace ADWebApplication.Controllers
 {
@@ -289,5 +290,12 @@ namespace ADWebApplication.Controllers
 
             return Ok(new UseRedemptionResponseDto { Success = true, Message = "Redemption marked as used" });
         }
+        
+        [HttpGet("test")]
+        public IActionResult Test()
+        {
+            return Ok(new { Message = "Test endpoint working" });
+        }
+
     }
 }
