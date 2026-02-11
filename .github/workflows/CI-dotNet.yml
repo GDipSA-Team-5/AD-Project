@@ -161,35 +161,35 @@ jobs:
   dast-scan:
     runs-on: ubuntu-latest
 
-  steps:
-    - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
-    - uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
-    - name: Publish App
-      run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --output publish
+      - name: Publish App
+        run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --output publish
 
-    - name: Run App Locally
-      run: |
-        ASPNETCORE_URLS=http://localhost:5000 nohup dotnet publish/ADWebApplication.dll &
-        echo "Waiting for app to start..."
-        until curl -s http://localhost:5000 > /dev/null; do
-          sleep 2
-        done
-        echo "App is running!"
+      - name: Run App Locally
+        run: |
+          ASPNETCORE_URLS=http://localhost:5000 nohup dotnet publish/ADWebApplication.dll &
+          echo "Waiting for app to start..."
+          until curl -s http://localhost:5000 > /dev/null; do
+            sleep 2
+          done
+          echo "App is running!"
 
-    - name: Run OWASP ZAP Baseline Scan
-      uses: zaproxy/action-baseline@4ea3deb659d9a669dc5e5c10c49a423e8bb41420
-      with:
-        target: 'http://localhost:5000'
-        fail_action: false
-        artifact_name: zap-report
-        cmd_options: >
-          -J report_json.json
-          -r report_html.html
-        allow_issue_writing: false
+      - name: Run OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@4ea3deb659d9a669dc5e5c10c49a423e8bb41420
+        with:
+          target: 'http://localhost:5000'
+          fail_action: false
+          artifact_name: zap-report
+          cmd_options: >
+            -J report_json.json
+            -r report_html.html
+          allow_issue_writing: false
 
       - name: Copy ZAP reports
         run: |
