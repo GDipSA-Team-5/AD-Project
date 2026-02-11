@@ -1,3 +1,36 @@
+const fs = require('fs');
+
+// Load ZAP metadata
+const zapData = JSON.parse(fs.readFileSync('scan-data/zap-metadata.json', 'utf8'));
+
+const currentScan = {
+  timestamp: zapData.timestamp,
+  run_id: zapData.run_id,
+  branch: zapData.branch,
+  commit: zapData.commit.substring(0, 7),
+  zap: zapData.zap
+};
+
+// Load historical data
+let historicalData = [];
+const historyFile = 'dashboard/history.json';
+
+if (fs.existsSync(historyFile)) {
+  historicalData = JSON.parse(fs.readFileSync(historyFile, 'utf8'));
+}
+
+// Add current scan to history
+historicalData.push(currentScan);
+
+// Keep last 30 runs
+if (historicalData.length > 30) {
+  historicalData = historicalData.slice(-30);
+}
+
+// Save updated history
+fs.mkdirSync('dashboard', { recursive: true });
+fs.writeFileSync(historyFile, JSON.stringify(historicalData, null, 2));
+
 const latest = currentScan;
 const previous = historicalData.length > 1
   ? historicalData[historicalData.length - 2]
@@ -5,7 +38,7 @@ const previous = historicalData.length > 1
 
 const trend =
   previous
-    ? latest.zap.total - previous.zap.total
+    ? parseInt(latest.zap.total) - parseInt(previous.zap.total)
     : 0;
 
 const trendIcon =
