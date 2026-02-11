@@ -41,7 +41,7 @@ namespace ADWebApplication.Services
         {
             if (_logger.IsEnabled(LogLevel.Information))
             {
-                _logger.LogInformation("Adding a new campaign: {CampaignName}", campaign.CampaignName);
+                _logger.LogInformation("Adding a new campaign");
             }
             if (campaign.EndDate < campaign.StartDate)
             {
@@ -63,7 +63,7 @@ namespace ADWebApplication.Services
             var campaignId = await _campaignRepository.AddCampaignAsync(campaign);
             if (_logger.IsEnabled(LogLevel.Information))
             {
-                _logger.LogInformation("Campaign added with ID: {campaignId}", campaignId);
+                _logger.LogInformation("Campaign added with ID");
             }
             return campaignId;
         }
@@ -71,7 +71,7 @@ namespace ADWebApplication.Services
         {
             if(_logger.IsEnabled(LogLevel.Information))
             {
-            _logger.LogInformation("Updating campaign with ID: {campaignId}", campaign.CampaignId);
+            _logger.LogInformation("Updating campaign with ID");
             }
             if (campaign.EndDate < campaign.StartDate)
             {
@@ -95,14 +95,14 @@ namespace ADWebApplication.Services
             {
                 if( _logger.IsEnabled(LogLevel.Information))
                 {
-                _logger.LogInformation("Campaign with ID: {campaignId} updated successfully.", campaign.CampaignId);
+                _logger.LogInformation("Campaign with ID updated successfully.");
                 }
             }
             else
             {
                 if( _logger.IsEnabled(LogLevel.Warning))
                 {
-                _logger.LogWarning("Failed to update campaign with ID: {campaignId}. It may not exist.", campaign.CampaignId);
+                _logger.LogWarning("Failed to update campaign with ID. It may not exist.");
                 }
             }
             return result;
@@ -111,7 +111,7 @@ namespace ADWebApplication.Services
         {
             if(_logger.IsEnabled(LogLevel.Information))
             {
-            _logger.LogInformation("Deleting campaign with ID: {campaignId}", campaignId);
+            _logger.LogInformation("Deleting campaign with ID");
             }
 
             var campaign = await _campaignRepository.GetCampaignByIdAsync(campaignId);
@@ -119,7 +119,7 @@ namespace ADWebApplication.Services
             {
                 if (_logger.IsEnabled(LogLevel.Warning))
                 {
-                    _logger.LogWarning("Campaign with ID: {campaignId} not found.", campaignId);
+                    _logger.LogWarning("Campaign with I not found.");
                 }
                 return false;
             }
@@ -133,14 +133,14 @@ namespace ADWebApplication.Services
             {
                 if(_logger.IsEnabled(LogLevel.Information))
                 {
-                _logger.LogInformation("Campaign with ID: {CampaignId} deleted successfully", campaignId);
+                _logger.LogInformation("Campaign with ID deleted successfully");
                 }
             }
             else
             {
                 if(_logger.IsEnabled(LogLevel.Warning))
                 {
-                _logger.LogWarning("Failed to delete campaign with ID: {CampaignId}", campaignId);
+                _logger.LogWarning("Failed to delete campaign with ID");
                 }
             }
             
@@ -166,14 +166,14 @@ namespace ADWebApplication.Services
         {
             if(_logger.IsEnabled(LogLevel.Information))
             {   
-            _logger.LogInformation("Activating campaign with ID: {CampaignId}", campaignId);
+            _logger.LogInformation("Activating campaign with ID");
             }
             var campaign = await _campaignRepository.GetCampaignByIdAsync(campaignId);
             if (campaign == null)
             {
                 if(_logger.IsEnabled(LogLevel.Warning))
                 {
-                _logger.LogWarning("Campaign with ID: {CampaignId} not found.", campaignId);
+                _logger.LogWarning("Campaign with ID not found.");
                 }
                 return false;
             }
@@ -189,14 +189,14 @@ namespace ADWebApplication.Services
             {
                 if(_logger.IsEnabled(LogLevel.Information))
                 {
-                _logger.LogInformation("Campaign with ID: {CampaignId} activated successfully", campaignId);
+                _logger.LogInformation("Campaign with ID activated successfully");
                 }
             }
             else
             {
                 if(_logger.IsEnabled(LogLevel.Warning))
                 {   
-                _logger.LogWarning("Failed to activate campaign with ID: {CampaignId}", campaignId);
+                _logger.LogWarning("Failed to activate campaign with ID");
                 }
             }
             
@@ -206,7 +206,8 @@ namespace ADWebApplication.Services
         {
             if(_logger.IsEnabled(LogLevel.Information))
             {   
-            _logger.LogInformation("Deactivating campaign with ID: {CampaignId}", campaignId);
+            _logger.LogInformation("Deactivating campaign with ID");
+
             }
             var campaign = await _campaignRepository.GetCampaignByIdAsync(campaignId);
             if (campaign == null)
@@ -219,14 +220,14 @@ namespace ADWebApplication.Services
             {
                 if(_logger.IsEnabled(LogLevel.Information))
                 {
-                _logger.LogInformation("Campaign with ID: {CampaignId} deactivated successfully", campaignId);
+                _logger.LogInformation("Campaign with ID deactivated successfully");
                 }
             }
             else
             {
                 if(_logger.IsEnabled(LogLevel.Warning))
                 {
-                _logger.LogWarning("Failed to deactivate campaign with ID: {CampaignId}", campaignId);
+                _logger.LogWarning("Failed to deactivate campaign with ID");
                 }
             }
             

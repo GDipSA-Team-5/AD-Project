@@ -75,8 +75,8 @@
         <div class="stat-label">Unique Users</div>
     </div>
     <div class="stat-card">
-        <div class="stat-value">@Model.Count(r => r.RedemptionStatus?.ToUpper() == "COMPLETED")</div>
-        <div class="stat-label">Completed</div>
+        <div class="stat-value">@Model.Count(r => r.RedemptionStatus?.ToUpper() == "ACTIVE")</div>
+        <div class="stat-label">Active</div>
     </div>
 </div>
 
@@ -99,7 +99,7 @@
                         <option value="">All Statuses</option>
                         @if (ViewBag.Statuses != null)
                         {
-                            @foreach (string stat in ViewBag.Statuses as List<string>)
+                            @foreach (string stat in (ViewBag.Statuses as List<string>) ?? new List<string>())
                             {
                                 <option value="@stat" selected="@(stat == ViewBag.Status)">@stat</option>
                             }
@@ -218,7 +218,7 @@
                                     <span class="fw-bold text-primary">@item.PointsUsed.ToString("N0") pts</span>
                                 </td>
                                 <td>
-                                    @if (item.RedemptionStatus?.ToUpper() == "COMPLETED")
+                                    @if (item.RedemptionStatus?.ToUpper() == "ACTIVE")
                                     {
                                         <span class="badge bg-success">@item.RedemptionStatus</span>
                                     }
