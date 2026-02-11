@@ -68,17 +68,19 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: dotnet sonarscanner end
 
-      # ---------------- Snyk SCA (.NET) ----------------
-      - name: Snyk .NET Dependency Scan
-        uses: snyk/actions/dotnet@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: >
-            --file=${{ env.PROJECT_PATH }}
-            --severity-threshold=high
-            --sarif-file-output=snyk-dotnet.sarif
+      # ---------------- Snyk .NET Dependency Scan ----------------
+      - name: Install Snyk CLI
+        run: npm install -g snyk
 
+      - name: Authenticate Snyk
+        run: snyk auth ${{ secrets.SNYK_TOKEN }}
+
+      - name: Run Snyk Test
+        run: |
+          snyk test ${{ env.PROJECT_PATH }} \
+            --severity-threshold=high \
+            --sarif-file-output=snyk-dotnet.sarif
+      
       - name: Upload Snyk SARIF
         uses: github/codeql-action/upload-sarif@v4
         if: always()
@@ -114,6 +116,12 @@ jobs:
           args: >
             --file=Dockerfile
             --severity-threshold=high
+      
+      - name: Upload Container SARIF
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: snyk.sarif
 
       # Save metadata for dashboard
       - name: Save SAST/SCA Metadata
@@ -140,7 +148,7 @@ jobs:
           path: scan-data/
 
 # =========================================================
-# JOB 2: DAST (Runs in Parallel)
+# JOB 2: DAST
 # =========================================================
   dast-scan:
     runs-on: ubuntu-latest   
