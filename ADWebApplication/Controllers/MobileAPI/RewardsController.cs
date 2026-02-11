@@ -12,6 +12,8 @@ namespace ADWebApplication.Controllers
     public class RewardsController : ControllerBase
     {
         private readonly In5niteDbContext _context;
+        
+        private string vendorCode = "0000";
 
         public RewardsController(In5niteDbContext context)
         {
@@ -193,9 +195,9 @@ namespace ADWebApplication.Controllers
                     WalletId = wallet.WalletId,
                     UserId = wallet.UserId,
                     PointsUsed = reward.Points,
-                    RedemptionStatus = "COMPLETED",
+                    RedemptionStatus = "ACTIVE",
                     RedemptionDateTime = now,
-                    FulfilledDatetime = now
+                    FulfilledDatetime = null
                 };
 
                 var transactionRow = new PointTransaction
@@ -269,7 +271,7 @@ namespace ADWebApplication.Controllers
             if (string.IsNullOrWhiteSpace(request.VendorCode))
                 return BadRequest(new UseRedemptionResponseDto { Success = false, Message = "Vendor code required" });
 
-            if (request.VendorCode != "0000")
+            if (request.VendorCode != vendorCode)
                 return Ok(new UseRedemptionResponseDto { Success = false, Message = "Invalid vendor code" });
 
             var redemption = await _context.RewardRedemptions
