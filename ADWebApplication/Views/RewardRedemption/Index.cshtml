@@ -75,8 +75,8 @@
         <div class="stat-label">Unique Users</div>
     </div>
     <div class="stat-card">
-        <div class="stat-value">@Model.Count(r => r.RedemptionStatus?.ToUpper() == "COMPLETED")</div>
-        <div class="stat-label">Completed</div>
+        <div class="stat-value">@Model.Count(r => r.RedemptionStatus?.ToUpper() == "ACTIVE")</div>
+        <div class="stat-label">Active</div>
     </div>
 </div>
 
@@ -99,7 +99,7 @@
                         <option value="">All Statuses</option>
                         @if (ViewBag.Statuses != null)
                         {
-                            @foreach (string stat in ViewBag.Statuses as List<string>)
+                            @foreach (string stat in (ViewBag.Statuses as List<string>) ?? new List<string>())
                             {
                                 <option value="@stat" selected="@(stat == ViewBag.Status)">@stat</option>
                             }
@@ -137,25 +137,46 @@
                         <th>
                             <input type="checkbox" id="selectAll" class="form-check-input">
                         </th>
-                        <th style="cursor: pointer;" onclick="sortTable(0)">
+                        <th style="cursor: pointer;"
+                            onclick="sortTable(0)"
+                            onkeydown="if(event.key === 'Enter' || event.key === ' ') sortTable(0)"
+                            tabindex="0">
                             Redemption ID <i class="bi bi-arrow-down-up"></i>
                         </th>
-                        <th style="cursor: pointer;" onclick="sortTable(1)">
+                        <th style="cursor: pointer;"
+                            onclick="sortTable(1)"
+                            onkeydown="if(event.key === 'Enter' || event.key === ' ') sortTable(1)"
+                            tabindex="0">
                             Reward <i class="bi bi-arrow-down-up"></i>
                         </th>
-                        <th style="cursor: pointer;" onclick="sortTable(2)">
+                        <th style="cursor: pointer;" 
+                            onclick="sortTable(2)"
+                            onkeydown="if(event.key === 'Enter' || event.key === ' ') sortTable(2)"
+                            tabindex="0">
                             User ID <i class="bi bi-arrow-down-up"></i>
                         </th>
-                        <th style="cursor: pointer;" onclick="sortTable(3)">
+                        <th style="cursor: pointer;" 
+                            onclick="sortTable(3)"
+                            onkeydown="if(event.key === 'Enter' || event.key === ' ') sortTable(3)"
+                            tabindex="0">
                             Points Used <i class="bi bi-arrow-down-up"></i>
                         </th>
-                        <th style="cursor: pointer;" onclick="sortTable(4)">
+                        <th style="cursor: pointer;" 
+                            onclick="sortTable(4)"
+                            onkeydown="if(event.key === 'Enter' || event.key === ' ') sortTable(4)"
+                            tabindex="0">   
                             Status <i class="bi bi-arrow-down-up"></i>
                         </th>
-                        <th style="cursor: pointer;" onclick="sortTable(5)">
+                        <th style="cursor: pointer;" 
+                            onclick="sortTable(5)"
+                            onkeydown="if(event.key === 'Enter' || event.key === ' ') sortTable(5)"
+                            tabindex="0">
                             Redeemed Date <i class="bi bi-arrow-down-up"></i>
                         </th>
-                        <th style="cursor: pointer;" onclick="sortTable(6)">
+                        <th style="cursor: pointer;" 
+                            onclick="sortTable(6)"
+                            onkeydown="if(event.key === 'Enter' || event.key === ' ') sortTable(6)"
+                            tabindex="0">
                             Fulfilled Date <i class="bi bi-arrow-down-up"></i>
                         </th>
                     </tr>
@@ -197,7 +218,7 @@
                                     <span class="fw-bold text-primary">@item.PointsUsed.ToString("N0") pts</span>
                                 </td>
                                 <td>
-                                    @if (item.RedemptionStatus?.ToUpper() == "COMPLETED")
+                                    @if (item.RedemptionStatus?.ToUpper() == "ACTIVE")
                                     {
                                         <span class="badge bg-success">@item.RedemptionStatus</span>
                                     }
