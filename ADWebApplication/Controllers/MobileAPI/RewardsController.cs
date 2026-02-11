@@ -2,14 +2,20 @@ using System.Drawing;
 using ADWebApplication.Data;
 using ADWebApplication.Models.DTOs;
 using ADWebApplication.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Dynamic;
+using System.Security.Claims;
 
 namespace ADWebApplication.Controllers
 {
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/rewards")]
+    [EnableRateLimiting("mobile")]
     public class RewardsController : ControllerBase
     {
         private readonly In5niteDbContext _context;
@@ -25,6 +31,12 @@ namespace ADWebApplication.Controllers
         [HttpGet("summary")]
         public async Task<ActionResult<RewardsSummaryDto>> GetSummary([FromQuery] int userId)
         {
+            var tokenUserId = GetUserIdFromToken();
+            if (tokenUserId == null)
+                return Unauthorized();
+            if (tokenUserId != userId)
+                return Forbid();
+
             var wallet = await _context.RewardWallet
                 .AsNoTracking()
                 .FirstOrDefaultAsync(w => w.UserId == userId);
@@ -63,6 +75,12 @@ namespace ADWebApplication.Controllers
         {
             if (userId <= 0)
                 return BadRequest("Invalid userId.");
+
+            var tokenUserId = GetUserIdFromToken();
+            if (tokenUserId == null)
+                return Unauthorized();
+            if (tokenUserId != userId)
+                return Forbid();
 
             var wallet = await _context.RewardWallet
                 .AsNoTracking()
@@ -104,6 +122,12 @@ namespace ADWebApplication.Controllers
         [HttpGet("wallet")]
         public async Task<ActionResult<RewardWalletDto>> GetWallet([FromQuery] int userId)
         {
+            var tokenUserId = GetUserIdFromToken();
+            if (tokenUserId == null)
+                return Unauthorized();
+            if (tokenUserId != userId)
+                return Forbid();
+
             var wallet = await _context.RewardWallet
                 .AsNoTracking()
                 .FirstOrDefaultAsync(w => w.UserId == userId);
@@ -157,8 +181,14 @@ namespace ADWebApplication.Controllers
                 return BadRequest(new RedeemResponseDto { Success = false, Message = "Invalid request" });
             }
 
+            var tokenUserId = GetUserIdFromToken();
+            if (tokenUserId == null)
+                return Unauthorized(new RedeemResponseDto { Success = false, Message = "Unauthorized" });
+            if (tokenUserId != request.UserId)
+                return Forbid();
+
             var wallet = await _context.RewardWallet
-                .FirstOrDefaultAsync(w => w.UserId == request.UserId);
+                .FirstOrDefaultAsync(w => w.UserId == tokenUserId.Value);
 
             if (wallet == null)
             {
@@ -194,7 +224,7 @@ namespace ADWebApplication.Controllers
                 {
                     RewardId = reward.RewardId,
                     WalletId = wallet.WalletId,
-                    UserId = wallet.UserId,
+                    UserId = tokenUserId.Value,
                     PointsUsed = reward.Points,
                     RedemptionStatus = "ACTIVE",
                     RedemptionDateTime = now,
@@ -237,6 +267,12 @@ namespace ADWebApplication.Controllers
         [HttpGet("redemptions")]
         public async Task<ActionResult<List<RewardRedemptionItemDto>>> GetRedemptions([FromQuery] int userId)
         {
+            var tokenUserId = GetUserIdFromToken();
+            if (tokenUserId == null)
+                return Unauthorized();
+            if (tokenUserId != userId)
+                return Forbid();
+
             var redemptions = await _context.RewardRedemptions
                 .AsNoTracking()
                 .Where(r => r.UserId == userId)
@@ -269,6 +305,10 @@ namespace ADWebApplication.Controllers
             if (request == null || request.RedemptionId <= 0)
                 return BadRequest(new UseRedemptionResponseDto { Success = false, Message = "Invalid request" });
 
+            var tokenUserId = GetUserIdFromToken();
+            if (tokenUserId == null)
+                return Unauthorized(new UseRedemptionResponseDto { Success = false, Message = "Unauthorized" });
+
             if (string.IsNullOrWhiteSpace(request.VendorCode))
                 return BadRequest(new UseRedemptionResponseDto { Success = false, Message = "Vendor code required" });
 
@@ -280,6 +320,9 @@ namespace ADWebApplication.Controllers
 
             if (redemption == null)
                 return Ok(new UseRedemptionResponseDto { Success = false, Message = "Redemption not found" });
+
+            if (redemption.UserId != tokenUserId.Value)
+                return Forbid();
 
             if (string.Equals(redemption.RedemptionStatus, "USED", StringComparison.OrdinalIgnoreCase))
                 return Ok(new UseRedemptionResponseDto { Success = false, Message = "Redemption already used" });
@@ -295,6 +338,12 @@ namespace ADWebApplication.Controllers
         public IActionResult Test()
         {
             return Ok(new { Message = "Test endpoint working" });
+        }
+
+        private int? GetUserIdFromToken()
+        {
+            var claimValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return int.TryParse(claimValue, out var userId) ? userId : null;
         }
 
     }
