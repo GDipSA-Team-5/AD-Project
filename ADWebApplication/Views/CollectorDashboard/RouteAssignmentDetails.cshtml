@@ -99,11 +99,11 @@
                 </span>
             </div>
             <div class="progress" style="height: 25px;">
-                <div class="progress-bar bg-success" role="progressbar" style="width: @Model.ProgressPercentage%"
-                    aria-valuenow="@Model.ProgressPercentage" aria-valuemin="0" aria-valuemax="100"
+                <progress class="progress-bar bg-success" style="width: @Model.ProgressPercentage%"
+                    value="@Model.ProgressPercentage" max="100"
                     aria-label="Route progress @Model.ProgressPercentage percent">
                     @Model.ProgressPercentage%
-                </div>
+                </progress>
             </div>
         </div>
     </div>
@@ -173,11 +173,11 @@
                                             var fillLevel = stop.BinFillLevel.Value;
                                             var fillClass = fillLevel >= 80 ? "danger" : fillLevel >= 50 ? "warning" : "success";
                                             <div class="progress" style="height: 20px;">
-                                                <div class="progress-bar bg-@fillClass" role="progressbar"
-                                                    style="width: @fillLevel%" aria-valuenow="@fillLevel" aria-valuemin="0"
-                                                    aria-valuemax="100" aria-label="Bin fill level @fillLevel percent">
+                                                <progress class="progress-bar bg-@fillClass"
+                                                    style="width: @fillLevel%" value="@fillLevel" max="100"
+                                                    aria-label="Bin fill level @fillLevel percent">
                                                     @fillLevel%
-                                                </div>
+                                                </progress>
                                             </div>
                                         }
                                         else
