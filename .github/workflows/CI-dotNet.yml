@@ -102,7 +102,7 @@ jobs:
           echo "total=$TOTAL" >> $GITHUB_OUTPUT
 
       - name: Build Docker image
-        run: docker build -t in5nite-dotnet:snyk .
+        run: docker build -t in5nite-dotnet:snyk ./ADWebApplication
 
       - name: Snyk Container Scan
         uses: snyk/actions/docker@master
@@ -112,7 +112,7 @@ jobs:
           image: in5nite-dotnet:snyk
           sarif: true
           args: >
-            --file=Dockerfile
+            --file=ADWebApplication/Dockerfile
             --severity-threshold=high
       
       - name: Upload Container SARIF
