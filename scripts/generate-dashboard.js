@@ -1,7 +1,14 @@
 const fs = require('fs');
 
 // Load ZAP metadata
-const zapData = JSON.parse(fs.readFileSync('scan-data/zap-metadata.json', 'utf8'));
+const zapData = JSON.parse(
+  fs.readFileSync('scan-data/zap-metadata.json', 'utf8')
+);
+
+// Safe access helper
+function safe(value) {
+  return value ? parseInt(value) : 0;
+}
 
 const currentScan = {
   timestamp: zapData.timestamp,
@@ -19,7 +26,7 @@ if (fs.existsSync(historyFile)) {
   historicalData = JSON.parse(fs.readFileSync(historyFile, 'utf8'));
 }
 
-// Add current scan to history
+// Add current scan
 historicalData.push(currentScan);
 
 // Keep last 30 runs
@@ -27,30 +34,35 @@ if (historicalData.length > 30) {
   historicalData = historicalData.slice(-30);
 }
 
-// Save updated history
+// Save history
 fs.mkdirSync('dashboard', { recursive: true });
 fs.writeFileSync(historyFile, JSON.stringify(historicalData, null, 2));
 
+// Trend Calculation
 const latest = currentScan;
-const previous = historicalData.length > 1
-  ? historicalData[historicalData.length - 2]
-  : null;
+const previous =
+  historicalData.length > 1
+    ? historicalData[historicalData.length - 2]
+    : null;
 
-const trend =
-  previous
-    ? parseInt(latest.zap.total) - parseInt(previous.zap.total)
-    : 0;
+const latestTotal = safe(latest.zap?.total?.total);
+const previousTotal = previous ? safe(previous.zap?.total?.total) : 0;
+
+const trend = previous ? latestTotal - previousTotal : 0;
 
 const trendIcon =
-  trend > 0 ? "⬆ Increasing"
-  : trend < 0 ? "⬇ Decreasing"
-  : "→ No Change";
+  trend > 0
+    ? "⬆ Increasing"
+    : trend < 0
+    ? "⬇ Decreasing"
+    : "→ No Change";
 
 const trendColor =
-  trend > 0 ? "danger"
-  : trend < 0 ? "success"
-  : "secondary";
+  trend > 0 ? "danger" :
+  trend < 0 ? "success" :
+  "secondary";
 
+// HTML Generation
 const html = `
 <!DOCTYPE html>
 <html>
@@ -58,6 +70,7 @@ const html = `
   <title>ZAP Security Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
   <style>
     body {
       background: #f4f6f9;
@@ -106,17 +119,17 @@ const html = `
 
   <div class="header text-center">
     <h1>OWASP ZAP Security Dashboard</h1>
-    <p class="mb-0">.NET + ML Aggregated DAST Monitoring</p>
+    <p>.NET + ML Aggregated DAST Monitoring</p>
   </div>
 
   <div class="container">
 
-    <!-- Latest Info -->
+    <!-- Latest Scan Info -->
     <div class="card p-4 mb-4">
       <h5>Latest Scan</h5>
-      <p class="mb-1"><strong>Branch:</strong> ${latest.branch}</p>
-      <p class="mb-1"><strong>Commit:</strong> ${latest.commit}</p>
-      <p class="mb-0"><strong>Date:</strong> ${new Date(latest.timestamp).toLocaleString()}</p>
+      <p><strong>Branch:</strong> ${latest.branch}</p>
+      <p><strong>Commit:</strong> ${latest.commit}</p>
+      <p><strong>Date:</strong> ${new Date(latest.timestamp).toLocaleString()}</p>
 
       <div class="mt-3">
         <span class="badge bg-${trendColor} trend-badge">
@@ -125,33 +138,33 @@ const html = `
       </div>
     </div>
 
-    <!-- Stat Cards -->
+    <!-- Aggregated Totals -->
     <div class="row text-center mb-4">
 
       <div class="col-md-3">
         <div class="card card-stat p-3">
-          <div class="stat-value text-danger">${latest.zap.high}</div>
+          <div class="stat-value text-danger">${safe(latest.zap?.total?.high)}</div>
           <small>High Severity</small>
         </div>
       </div>
 
       <div class="col-md-3">
         <div class="card card-stat p-3">
-          <div class="stat-value text-warning">${latest.zap.medium}</div>
+          <div class="stat-value text-warning">${safe(latest.zap?.total?.medium)}</div>
           <small>Medium Severity</small>
         </div>
       </div>
 
       <div class="col-md-3">
         <div class="card card-stat p-3">
-          <div class="stat-value text-info">${latest.zap.low}</div>
+          <div class="stat-value text-info">${safe(latest.zap?.total?.low)}</div>
           <small>Low Severity</small>
         </div>
       </div>
 
       <div class="col-md-3">
         <div class="card card-stat p-3">
-          <div class="stat-value">${latest.zap.total}</div>
+          <div class="stat-value">${safe(latest.zap?.total?.total)}</div>
           <small>Total Alerts</small>
         </div>
       </div>
@@ -164,7 +177,7 @@ const html = `
       <canvas id="trendChart"></canvas>
     </div>
 
-    <!-- Pie Breakdown -->
+    <!-- Severity Breakdown -->
     <div class="card p-4">
       <h5>Latest Severity Breakdown</h5>
       <canvas id="pieChart"></canvas>
@@ -175,8 +188,9 @@ const html = `
 
 <script>
 const history = ${JSON.stringify(historicalData)};
+
 const labels = history.map(h => h.commit);
-const totals = history.map(h => parseInt(h.zap.total));
+const totals = history.map(h => parseInt(h.zap?.total?.total || 0));
 
 new Chart(document.getElementById('trendChart'), {
   type: 'line',
@@ -193,12 +207,8 @@ new Chart(document.getElementById('trendChart'), {
   },
   options: {
     responsive: true,
-    plugins: {
-      legend: { display: false }
-    },
-    scales: {
-      y: { beginAtZero: true }
-    }
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true } }
   }
 });
 
@@ -208,18 +218,16 @@ new Chart(document.getElementById('pieChart'), {
     labels: ['High', 'Medium', 'Low'],
     datasets: [{
       data: [
-        ${latest.zap.high},
-        ${latest.zap.medium},
-        ${latest.zap.low}
+        ${safe(latest.zap?.total?.high)},
+        ${safe(latest.zap?.total?.medium)},
+        ${safe(latest.zap?.total?.low)}
       ],
       backgroundColor: ['#dc3545', '#ffc107', '#0dcaf0']
     }]
   },
   options: {
     responsive: true,
-    plugins: {
-      legend: { position: 'bottom' }
-    }
+    plugins: { legend: { position: 'bottom' } }
   }
 });
 </script>
@@ -227,3 +235,6 @@ new Chart(document.getElementById('pieChart'), {
 </body>
 </html>
 `;
+
+fs.writeFileSync('dashboard/index.html', html);
+console.log("ZAP Dashboard generated successfully.");
