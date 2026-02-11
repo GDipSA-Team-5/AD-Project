@@ -26,12 +26,8 @@ namespace ADWebApplication.Data.Repository
         {
             var targetMonth = forMonth ?? DateTime.SpecifyKind(DateTime.Now.AddMonths(-1), DateTimeKind.Utc);
             var previousMonth = targetMonth.AddMonths(-1);
-        
-            var allUsers = await _db.PublicUser.CountAsync();
 
             var activeUsers1 = await _db.PublicUser.CountAsync(u => u.IsActive);
-
-            var sampleUsers = await _db.PublicUser.Take(5).Select(u => new { u.Id, u.IsActive }).ToListAsync();
 
             var totalUsers = activeUsers1;
 
