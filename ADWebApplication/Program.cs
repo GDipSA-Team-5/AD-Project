@@ -12,6 +12,7 @@ using System.Text;
 using ADWebApplication.Data.Repository;
 using Azure.Identity;
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,17 +57,17 @@ if (!builder.Environment.IsDevelopment() && !shouldSkipKeyVault)
         keyVaultUrl,
         new DefaultAzureCredential()
     );
-    //Force the app to crash if secrets missing
-    void Require(string key)
-    {
-        if (string.IsNullOrWhiteSpace(builder.Configuration[key]))
-            throw new Exception($"Missing required config: {key}");
-    }
-
-    Require("Jwt:Key");
-    Require("Jwt:Issuer");
-    Require("Jwt:Audience");
 }
+//Force the app to crash if secrets missing
+void Require(string key)
+{
+    if (string.IsNullOrWhiteSpace(builder.Configuration[key]))
+    throw new Exception($"Missing required config: {key}");
+}
+
+Require("Jwt:Key");
+Require("Jwt:Issuer");
+Require("Jwt:Audience");
 
 if (builder.Environment.IsEnvironment("CI"))
 {
