@@ -2,6 +2,7 @@ using ADWebApplication.Data;
 using ADWebApplication.Models;
 using ADWebApplication.Services;
 using ADWebApplication.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
@@ -104,6 +105,7 @@ public class EmpAuthController : Controller
 
     // Login
     [HttpGet]
+    [AllowAnonymous]
     public IActionResult Login()
     {
         if (User.Identity != null && User.Identity.IsAuthenticated)
@@ -114,6 +116,7 @@ public class EmpAuthController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [AllowAnonymous]
     public async Task<IActionResult> Login(LoginViewModel model)
     {
         if (!ModelState.IsValid) return View(model);
@@ -156,6 +159,7 @@ public class EmpAuthController : Controller
 
     // Verify OTP (GET)
     [HttpGet]
+    [AllowAnonymous]
     public IActionResult VerifyOtp()
     {
         var username = HttpContext.Session.GetString(KEY_USER);
@@ -180,6 +184,7 @@ public class EmpAuthController : Controller
     // Verify OTP (POST)
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [AllowAnonymous]
     public async Task<IActionResult> VerifyOtp(OtpVerificationViewModel model)
     {
         if (!ModelState.IsValid)
@@ -261,6 +266,7 @@ public class EmpAuthController : Controller
     // Resend OTP
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [AllowAnonymous]
     public async Task<IActionResult> ResendOtp()
     {
         var username = HttpContext.Session.GetString(KEY_USER);
