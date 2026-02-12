@@ -1,21 +1,31 @@
-[ApiController]
-public class InfraController : ControllerBase
+using ADWebApplication.Models.DTOs;
+using ADWebApplication.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Mvc;
+
+namespace ADWebApplication.Controllers.MobileAPI
 {
-    private readonly IConfiguration _config;
-
-    public InfraController(IConfiguration config)
+    [ApiController]
+    public class InfraController : ControllerBase
     {
-        _config = config;
-    }
+        private readonly IConfiguration _config;
 
-    [AllowAnonymous]
-    [HttpGet("/auth-check")]
-    public IActionResult AuthCheck()
-    {
-        return Ok(new {
-            KeyLength = (_config["Jwt:Key"]?.Length ?? 0),
-            Issuer = _config["Jwt:Issuer"],
-            Audience = _config["Jwt:Audience"]
-        });
+        public InfraController(IConfiguration config)
+        {
+            _config = config;
+        }
+
+        [AllowAnonymous]
+        [HttpGet("/auth-check")]
+        public IActionResult AuthCheck()
+        {
+            return Ok(new {
+                KeyLength = (_config["Jwt:Key"]?.Length ?? 0),
+                Issuer = _config["Jwt:Issuer"],
+                Audience = _config["Jwt:Audience"]
+            });
+        }
     }
 }
