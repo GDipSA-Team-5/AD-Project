@@ -56,6 +56,16 @@ if (!builder.Environment.IsDevelopment() && !shouldSkipKeyVault)
         keyVaultUrl,
         new DefaultAzureCredential()
     );
+    //Force the app to crash if secrets missing
+    void Require(string key)
+    {
+        if (string.IsNullOrWhiteSpace(builder.Configuration[key]))
+            throw new Exception($"Missing required config: {key}");
+    }
+
+    Require("Jwt:Key");
+    Require("Jwt:Issuer");
+    Require("Jwt:Audience");
 }
 
 if (builder.Environment.IsEnvironment("CI"))
@@ -99,8 +109,12 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         opt.SlidingExpiration = true;
     })
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, opt =>
-    {
-        var key = builder.Configuration["Jwt:Key"] ?? string.Empty;
+    {   
+        // Enforce minimum key strength
+        var key = builder.Configuration["Jwt:Key"]!;
+        if (key.Length < 32)
+            throw new Exception("JWT key too short. Must be >= 32 chars.");
+
         var keyBytes = Encoding.UTF8.GetBytes(key);
 
         opt.TokenValidationParameters = new TokenValidationParameters
@@ -122,8 +136,13 @@ builder.Services.AddHttpClient<IBinPredictionService, BinPredictionService>(clie
     client.BaseAddress = new Uri("https://in5nite-ml-fdcycfe6gkfnhdg2.southeastasia-01.azurewebsites.net");
 });
 
-
-builder.Services.AddAuthorization();
+// Any endpoint without [AllowAnonymous] is protected
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
 
 builder.Services.AddRateLimiter(options =>
 {
