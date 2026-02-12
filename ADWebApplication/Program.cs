@@ -65,9 +65,12 @@ void Require(string key)
     throw new Exception($"Missing required config: {key}");
 }
 
-Require("Jwt:Key");
-Require("Jwt:Issuer");
-Require("Jwt:Audience");
+if (!builder.Environment.IsEnvironment("CI"))
+{
+    Require("Jwt:Key");
+    Require("Jwt:Issuer");
+    Require("Jwt:Audience");
+}
 
 if (builder.Environment.IsEnvironment("CI"))
 {
