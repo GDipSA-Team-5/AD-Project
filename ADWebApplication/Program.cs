@@ -13,6 +13,7 @@ using ADWebApplication.Data.Repository;
 using Azure.Identity;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 

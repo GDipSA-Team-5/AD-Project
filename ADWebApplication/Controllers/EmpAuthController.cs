@@ -12,6 +12,7 @@ using System.Security.Cryptography;
 
 namespace ADWebApplication.Controllers;
 
+[AllowAnonymous]
 public class EmpAuthController : Controller
 {
     private readonly In5niteDbContext _db;
