@@ -229,7 +229,7 @@ namespace ADWebApplication.Data.Repository
                                 join region in _db.Regions on bin.RegionId equals region.RegionId into regionJoin
                                 from region in regionJoin.DefaultIfEmpty()
                                 where log.DisposalTimeStamp >= cutoff
-                                        && bin.RegionId != null  // ✅ ADD THIS - Filter out unassigned regions
+                                        && bin.RegionId != null  // Ensure bin has a region
                                 group new { log, bin, region } by new { bin.RegionId, region.RegionName } into g
                                 select new
                                 {
