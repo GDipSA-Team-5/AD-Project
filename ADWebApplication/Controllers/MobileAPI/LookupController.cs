@@ -21,21 +21,21 @@ namespace ADWebApplication.Controllers
         }
 
         [HttpGet("bins")]
-        public async Task<ActionResult<List<MobileLookupBinDto>>> GetBins()
+        public async Task<IActionResult> GetBins()
         {
             var result = await _lookupService.GetBinsAsync();
             return Ok(result);
         }
 
         [HttpGet("categories")]
-        public async Task<ActionResult<List<MobileLookupCategoryDto>>> GetCategories()
+        public async Task<IActionResult> GetCategories()
         {
             var result = await _lookupService.GetCategoriesAsync();
             return Ok(result);
         }
 
         [HttpGet("itemtypes")]
-        public async Task<ActionResult<List<MobileLookupItemTypeDto>>> GetItemTypes([FromQuery] int categoryId)
+        public async Task<IActionResult> GetItemTypes([FromQuery] int categoryId)
         {
             var result = await _lookupService.GetItemTypesAsync(categoryId);
             return Ok(result);
