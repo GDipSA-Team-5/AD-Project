@@ -54,17 +54,18 @@ namespace ADWebApplication.Services
             var now = DateTime.UtcNow;
             if (campaign.StartDate > now)
             {
-                campaign.Status = "Planned";
+                campaign.Status = "SCHEDULED";
             }
             else if (campaign.EndDate < now)
             {
-                campaign.Status = "Completed";
+                campaign.Status = "EXPIRED";
             }
             var campaignId = await _campaignRepository.AddCampaignAsync(campaign);
             if (_logger.IsEnabled(LogLevel.Information))
             {
                 _logger.LogInformation("Campaign added with ID: {campaignId}", campaignId);
             }
+            
             return campaignId;
         }
         public async Task<bool> UpdateCampaignAsync(Campaign campaign)
@@ -84,11 +85,11 @@ namespace ADWebApplication.Services
             var now = DateTime.UtcNow;
             if (campaign.StartDate > now)
             {
-                campaign.Status = "Planned";
+                campaign.Status = "SCHEDULED";
             }
             else if (campaign.EndDate < now)
             {
-                campaign.Status = "Completed";
+                campaign.Status = "EXPIRED";
             }
             var result = await _campaignRepository.UpdateCampaignAsync(campaign);
             if (result)
@@ -123,7 +124,7 @@ namespace ADWebApplication.Services
                 }
                 return false;
             }
-            if (campaign.Status == "Active")
+            if (campaign.Status == "ACTIVE")
             {
                 throw new InvalidOperationException("Cannot delete an active campaign.");
             }

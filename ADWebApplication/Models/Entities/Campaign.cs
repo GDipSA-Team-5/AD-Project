@@ -43,7 +43,7 @@ public class Campaign
     public string? Description { get; set; } = string.Empty;
     
     [Column("status")]
-    public string? Status { get; set; } = "INACTIVE"; // e.g. "Planned", "Active", "Completed, Inactive"
+    public string? Status { get; set; } = "INACTIVE"; // e.g. "SCHEDULED", "ACTIVE", "EXPIRED", "INACTIVE"
 
     [NotMapped]
     public bool IsActive
