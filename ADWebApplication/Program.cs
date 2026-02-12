@@ -185,6 +185,27 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+if (!app.Environment.IsDevelopment())
+{
+    var forwardOptions = new ForwardedHeadersOptions
+    {
+        ForwardedHeaders = ForwardedHeaders.XForwardedFor |
+                           ForwardedHeaders.XForwardedProto
+    };
+
+    // Allow Azure proxy
+    forwardOptions.KnownNetworks.Clear();
+    forwardOptions.KnownProxies.Clear();
+
+    app.UseForwardedHeaders(forwardOptions);
+}
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
+
 app.Use(async (context, next) =>
 {
     context.Response.Headers["X-Content-Type-Options"] = "nosniff";
@@ -221,14 +242,8 @@ app.MapGet("/emp-test", async (In5niteDbContext db) =>
     return Results.Ok(new { employeeCount = count });
 });
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
-}
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
 app.UseRouting();
 app.UseCors("AllowAndroid");
