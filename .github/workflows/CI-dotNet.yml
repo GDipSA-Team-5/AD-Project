@@ -11,6 +11,11 @@ env:
   DOTNET_VERSION: '10.0.x'
   PROJECT_PATH: './ADWebApplication/ADWebApplication.csproj'
   SKIP_KEYVAULT_IN_TESTS: "true"
+  ASPNETCORE_ENVIRONMENT: CI
+
+  Jwt__Key: "ci-dummy-secret-12345678901234567890"
+  Jwt__Issuer: "ci"
+  Jwt__Audience: "ci"
 
 # =========================================================
 # JOB 1: SAST + SCA (SonarCloud + Snyk)
