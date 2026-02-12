@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ADWebApplication.Services.Collector
 {
+    // Handles route assignment retrieval and details for collectors
     public class CollectorAssignmentService : ICollectorAssignmentService
     {
         private readonly In5niteDbContext _db;
@@ -14,6 +15,8 @@ namespace ADWebApplication.Services.Collector
             _db = db;
         }
 
+        // Gets paginated route assignments for a collector with optional filters
+        // Returns the full assignment with all planned routes grouped together
         public async Task<RouteAssignmentSearchViewModel> GetRouteAssignmentsAsync(string username, string? search, int? regionId, DateTime? date, string? status, int page, int pageSize)
         {
             // Start from RoutePlans to ensure filters apply correctly to the individual daily routes
@@ -155,6 +158,7 @@ namespace ADWebApplication.Services.Collector
             };
         }
 
+        // Returns the next uncompleted stops on today's route for real-time navigation
         public async Task<NextStopsViewModel?> GetNextStopsAsync(string username, int top)
         {
             var todayAssignment = await _db.RouteAssignments

@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ADWebApplication.Services.Collector
 {
+    // Handles issue reporting and tracking for collectors on their routes
+    // Supports reporting new issues, viewing existing ones, and updating issue status
     public class CollectorIssueService : ICollectorIssueService
     {
         private readonly In5niteDbContext _db;
@@ -17,6 +19,7 @@ namespace ADWebApplication.Services.Collector
             _db = db;
         }
 
+        // Gets the issue reporting page data: today's bins and existing issues with filters
         public async Task<ReportIssueVM> GetReportIssueViewModelAsync(string username, string? search, string? status, string? priority)
         {
             var today = DateTime.Today;
@@ -98,6 +101,8 @@ namespace ADWebApplication.Services.Collector
             };
         }
 
+        // Submits a new issue report for a bin on today's route
+        // Returns false if the bin isn't on today's active route
         public async Task<bool> SubmitIssueAsync(ReportIssueVM model, string username)
         {
             var today = DateTime.Today;
@@ -114,6 +119,7 @@ namespace ADWebApplication.Services.Collector
 
             if (stop == null) return false;
 
+            // Format issue as semi-colon separated key-value pairs
             var newIssue = $"type: {model.IssueType}; severity: {model.Severity}; status: {CollectorConstants.StatusOpen}; description: {model.Description}";
 
             if (string.IsNullOrWhiteSpace(stop.IssueLog))
@@ -125,6 +131,8 @@ namespace ADWebApplication.Services.Collector
             return true;
         }
 
+        // Toggles issue status: Open → In Progress → Resolved
+        // Returns the new status or an error message
         public async Task<string> StartIssueWorkAsync(int stopId, string username)
         {
             var stop = await _db.RouteStops
@@ -166,6 +174,7 @@ namespace ADWebApplication.Services.Collector
 
         #region Helper Methods
 
+        // Converts raw issue log text into structured IssueLogItem
         private static IssueLogItem MapIssueLog(RouteStop stop, string issueLog, string reportedBy)
         {
             var issueType = ExtractValue(issueLog, "type") ?? "Other";
@@ -192,6 +201,7 @@ namespace ADWebApplication.Services.Collector
             };
         }
 
+        // Extracts value for a key from semi-colon separated string (e.g. "type: Damaged; severity: High")  
         // SonarQube: add timeout + escape the key to avoid ReDoS and pattern injection
         private static string? ExtractValue(string input, string key)
         {
@@ -206,6 +216,7 @@ namespace ADWebApplication.Services.Collector
             return match.Success ? match.Groups[1].Value.Trim() : null;
         }
 
+        // Updates or adds status field in the issue log string
         // SonarQube: add timeout to Regex constructor
         private static string UpdateIssueLogStatus(string? input, string status)
         {
@@ -229,6 +240,7 @@ namespace ADWebApplication.Services.Collector
             return $"{baseText}; status: {status}";
         }
 
+        // Guesses severity from keywords when not explicitly provided
         private static string InferSeverity(string input)
         {
             if (input.Contains("high", StringComparison.OrdinalIgnoreCase)) return "High";
@@ -236,6 +248,7 @@ namespace ADWebApplication.Services.Collector
             return "Medium";
         }
 
+        // Guesses status from keywords when not explicitly provided
         private static string InferStatus(string input)
         {
             if (input.Contains("resolved", StringComparison.OrdinalIgnoreCase) || input.Contains("closed", StringComparison.OrdinalIgnoreCase)) return CollectorConstants.StatusResolved;
