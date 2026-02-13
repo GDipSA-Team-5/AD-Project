@@ -8,7 +8,11 @@ namespace ADWebApplication.Models.DTOs
         public int Points { get; set; }
         public string RewardCategory { get; set; } = string.Empty;
         public int StockQuantity { get; set; }
-        public string ImageUrl { get; set; } = string.Empty;
+        public string ImageUrl 
+        { 
+            get; 
+            set => field = (value ?? string.Empty).Replace("http://", "https://");
+        } = string.Empty;
         public bool Availability { get; set; }
     }
 }

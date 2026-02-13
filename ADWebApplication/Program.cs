@@ -1,267 +1,275 @@
-using Microsoft.EntityFrameworkCore;
-using ADWebApplication.Data;
-using Microsoft.VisualBasic;
-using ADWebApplication.Models;
-using ADWebApplication.Services;
-using ADWebApplication.Services.Collector;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using ADWebApplication.Data.Repository;
-using Azure.Identity;
-using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.HttpOverrides;
+    using Microsoft.EntityFrameworkCore;
+    using ADWebApplication.Data;
+    using Microsoft.VisualBasic;
+    using ADWebApplication.Models;
+    using ADWebApplication.Services;
+    using ADWebApplication.Services.Collector;
+    using Microsoft.AspNetCore.Authentication.Cookies;
+    using Microsoft.AspNetCore.Authentication.JwtBearer;
+    using Microsoft.AspNetCore.RateLimiting;
+    using Microsoft.IdentityModel.Tokens;
+    using System.Text;
+    using ADWebApplication.Data.Repository;
+    using Azure.Identity;
+    using System.Threading.RateLimiting;
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.HttpOverrides;
 
-var builder = WebApplication.CreateBuilder(args);
+    var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllersWithViews();
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
+    builder.Services.AddControllersWithViews();
+    builder.Logging.ClearProviders();
+    builder.Logging.AddConsole();
 
-builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
-builder.Services.AddScoped<IAdminRepository, AdminRepository>();
-builder.Services.AddScoped<ICollectorService, CollectorService>();
-builder.Services.AddScoped<ICollectorDashboardService, CollectorDashboardService>();
-builder.Services.AddScoped<ICollectorAssignmentService, CollectorAssignmentService>();
-builder.Services.AddScoped<ICollectorIssueService, CollectorIssueService>();
-builder.Services.AddScoped<IRouteAssignmentService, RouteAssignmentService>();
-builder.Services.AddScoped<IRoutePlanningService, RoutePlanningService>();
-builder.Services.AddScoped<ICampaignService, CampaignService>();
-builder.Services.AddScoped<ICampaignRepository, CampaignRepository>();
-builder.Services.AddScoped<IRewardCatalogueService, RewardCatalogueService>();
-builder.Services.AddScoped<IRewardCatalogueRepository, RewardCatalogueRepository>();
-builder.Services.AddScoped<JwtTokenService>();
-builder.Services.AddScoped<IMobileAuthService, MobileAuthService>();
-builder.Services.AddScoped<IMobileLookupService, MobileLookupService>();
-builder.Services.AddScoped<IMobileRewardsService, MobileRewardsService>();
-builder.Services.AddScoped<IDisposalLogsService, DisposalLogsService>();
-builder.Services.AddScoped<IWalletService, WalletService>();
-builder.Services.AddScoped<IRewardsRedemptionService, RewardsRedemptionService>();
+    builder.Services.AddScoped<IEmailService, EmailService>();
+    builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
+    builder.Services.AddScoped<IAdminRepository, AdminRepository>();
+    builder.Services.AddScoped<ICollectorService, CollectorService>();
+    builder.Services.AddScoped<ICollectorDashboardService, CollectorDashboardService>();
+    builder.Services.AddScoped<ICollectorAssignmentService, CollectorAssignmentService>();
+    builder.Services.AddScoped<ICollectorIssueService, CollectorIssueService>();
+    builder.Services.AddScoped<IRouteAssignmentService, RouteAssignmentService>();
+    builder.Services.AddScoped<IRoutePlanningService, RoutePlanningService>();
+    builder.Services.AddScoped<ICampaignService, CampaignService>();
+    builder.Services.AddScoped<ICampaignRepository, CampaignRepository>();
+    builder.Services.AddScoped<IRewardCatalogueService, RewardCatalogueService>();
+    builder.Services.AddScoped<IRewardCatalogueRepository, RewardCatalogueRepository>();
+    builder.Services.AddScoped<JwtTokenService>();
+    builder.Services.AddScoped<IMobileAuthService, MobileAuthService>();
+    builder.Services.AddScoped<IMobileLookupService, MobileLookupService>();
+    builder.Services.AddScoped<IMobileRewardsService, MobileRewardsService>();
+    builder.Services.AddScoped<IDisposalLogsService, DisposalLogsService>();
+    builder.Services.AddScoped<IWalletService, WalletService>();
+    builder.Services.AddScoped<IRewardsRedemptionService, RewardsRedemptionService>();
 
-// Azure Key Vault integration
-builder.Configuration.AddEnvironmentVariables();
+    // Azure Key Vault integration
+    builder.Configuration.AddEnvironmentVariables();
 
-// Check if we should skip Key Vault (for CI/CD and testing)
-var skipKeyVault = Environment.GetEnvironmentVariable("SKIP_KEYVAULT_IN_TESTS");
-var shouldSkipKeyVault = !string.IsNullOrEmpty(skipKeyVault) && 
-                         skipKeyVault.Equals("true", StringComparison.OrdinalIgnoreCase);
+    // Check if we should skip Key Vault (for CI/CD and testing)
+    var skipKeyVault = Environment.GetEnvironmentVariable("SKIP_KEYVAULT_IN_TESTS");
+    var shouldSkipKeyVault = !string.IsNullOrEmpty(skipKeyVault) && 
+                            skipKeyVault.Equals("true", StringComparison.OrdinalIgnoreCase);
 
-// Add Key Vault only in non-development environments and when not explicitly skipped
-if (!builder.Environment.IsDevelopment() && !shouldSkipKeyVault)
-{
-    var keyVaultUrl = new Uri("https://in5nite-kv.vault.azure.net/");
-    builder.Configuration.AddAzureKeyVault(
-        keyVaultUrl,
-        new DefaultAzureCredential()
-    );
-}
-//Force the app to crash if secrets missing
-void Require(string key)
-{
-    if (string.IsNullOrWhiteSpace(builder.Configuration[key]))
-    throw new Exception($"Missing required config: {key}");
-}
-
-if (!builder.Environment.IsEnvironment("CI"))
-{
-    Require("Jwt:Key");
-    Require("Jwt:Issuer");
-    Require("Jwt:Audience");
-}
-
-if (builder.Environment.IsEnvironment("CI"))
-{
-    builder.Services.AddDbContext<In5niteDbContext>(options =>
-        options.UseInMemoryDatabase("TestDb"));
-}
-else
-{
-    var mySqlConn = builder.Configuration.GetConnectionString("DefaultConnection");
-
-    builder.Services.AddDbContext<In5niteDbContext>(options =>
-        options.UseMySql(
-            mySqlConn,
-            new MySqlServerVersion(new Version(8, 0, 36))
-        )
-    );
-}
-
-// Session (needed for OTP)
-builder.Services.AddSession(opt =>
-{
-    opt.IdleTimeout = TimeSpan.FromMinutes(10);
-    opt.Cookie.HttpOnly = true;
-    opt.Cookie.IsEssential = true;
-    opt.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-    opt.Cookie.SameSite = SameSiteMode.Strict;
-});
-// Antiforgery (needed if your JS uses header token)
-builder.Services.AddAntiforgery(opt =>
-{
-    opt.HeaderName = "RequestVerificationToken";
-});
-
-// Cookie Auth (needed for RBAC + redirect)
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(opt =>
+    // Add Key Vault only in non-development environments and when not explicitly skipped
+    if (!builder.Environment.IsDevelopment() && !shouldSkipKeyVault)
     {
-        opt.LoginPath = "/EmpAuth/Login";
-        opt.ExpireTimeSpan = TimeSpan.FromMinutes(30);
-        opt.SlidingExpiration = true;
-    })
-    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, opt =>
-    {   
-        // Enforce minimum key strength
-        var key = builder.Configuration["Jwt:Key"]!;
-        if (key.Length < 32)
-            throw new Exception("JWT key too short. Must be >= 32 chars.");
+        var keyVaultUrl = new Uri("https://in5nite-kv.vault.azure.net/");
+        builder.Configuration.AddAzureKeyVault(
+            keyVaultUrl,
+            new DefaultAzureCredential()
+        );
+    }
+    //Force the app to crash if secrets missing
+    void Require(string key)
+    {
+        if (string.IsNullOrWhiteSpace(builder.Configuration[key]))
+        throw new Exception($"Missing required config: {key}");
+    }
 
-        var keyBytes = Encoding.UTF8.GetBytes(key);
+    if (!builder.Environment.IsEnvironment("CI"))
+    {
+        Require("Jwt:Key");
+        Require("Jwt:Issuer");
+        Require("Jwt:Audience");
+    }
 
-        opt.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
-            ClockSkew = TimeSpan.FromMinutes(2)
-        };
+    if (builder.Environment.IsEnvironment("CI"))
+    {
+        builder.Services.AddDbContext<In5niteDbContext>(options =>
+            options.UseInMemoryDatabase("TestDb"));
+    }
+    else
+    {
+        var mySqlConn = builder.Configuration.GetConnectionString("DefaultConnection");
+
+        builder.Services.AddDbContext<In5niteDbContext>(options =>
+            options.UseMySql(
+                mySqlConn,
+                new MySqlServerVersion(new Version(8, 0, 36))
+            )
+        );
+    }
+
+    // Session (needed for OTP)
+    builder.Services.AddSession(opt =>
+    {
+        opt.IdleTimeout = TimeSpan.FromMinutes(10);
+        opt.Cookie.HttpOnly = true;
+        opt.Cookie.IsEssential = true;
+        opt.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        opt.Cookie.SameSite = SameSiteMode.Strict;
+    });
+    // Antiforgery (needed if your JS uses header token)
+    builder.Services.AddAntiforgery(opt =>
+    {
+        opt.HeaderName = "RequestVerificationToken";
     });
 
-//ML Flask
-builder.Services.AddHttpClient<IBinPredictionService, BinPredictionService>(client =>
-{
-    client.BaseAddress = new Uri("https://in5nite-ml-fdcycfe6gkfnhdg2.southeastasia-01.azurewebsites.net");
-});
+    // Cookie Auth (needed for RBAC + redirect)
+    builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+        .AddCookie(opt =>
+        {
+            opt.LoginPath = "/EmpAuth/Login";
+            opt.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+            opt.SlidingExpiration = true;
+        })
+        .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, opt =>
+        {   
+            // Enforce minimum key strength
+            var key = builder.Configuration["Jwt:Key"]!;
+            if (key.Length < 32)
+                throw new Exception("JWT key too short. Must be >= 32 chars.");
 
-// Any endpoint without [AllowAnonymous] is protected
-builder.Services.AddAuthorization(options =>
-{
-    options.FallbackPolicy = new AuthorizationPolicyBuilder()
-        .RequireAuthenticatedUser()
-        .Build();
-});
+            var keyBytes = Encoding.UTF8.GetBytes(key);
 
-builder.Services.AddRateLimiter(options =>
-{
-    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-    options.AddPolicy("mobile", context =>
-    {
-        var userId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        var partitionKey = !string.IsNullOrWhiteSpace(userId)
-            ? $"user:{userId}"
-            : $"ip:{context.Connection.RemoteIpAddress}";
-
-        return RateLimitPartition.GetFixedWindowLimiter(
-            partitionKey: partitionKey,
-            factory: _ => new FixedWindowRateLimiterOptions
+            opt.TokenValidationParameters = new TokenValidationParameters
             {
-                PermitLimit = 60,
-                Window = TimeSpan.FromMinutes(1),
-                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-                QueueLimit = 0
-            });
-    });
-});
-
-// CORS policy for Android mobile app
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAndroid", policy =>
-    {
-        policy
-            .WithOrigins("http://10.0.2.2")
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
-});
-
-var app = builder.Build();
-
-if (!app.Environment.IsDevelopment())
-{
-    var forwardOptions = new ForwardedHeadersOptions
-    {
-        ForwardedHeaders = ForwardedHeaders.XForwardedFor |
-                           ForwardedHeaders.XForwardedProto
-    };
-
-    // Allow Azure proxy
-    forwardOptions.KnownNetworks.Clear();
-    forwardOptions.KnownProxies.Clear();
-
-    app.UseForwardedHeaders(forwardOptions);
-}
-
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
-}
-
-app.Use(async (context, next) =>
-{
-    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
-    context.Response.Headers["X-Frame-Options"] = "DENY";
-    context.Response.Headers["Referrer-Policy"] = "no-referrer";
-    context.Response.Headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()";
-
-    await next();
-});
-
-app.MapGet("/health", async (In5niteDbContext db) =>
-{
-    try
-    {
-        var canConnect = await db.Database.CanConnectAsync();
-        return Results.Ok(new { canConnect });
-    }
-    catch (Exception ex)
-    {
-        return Results.Ok(new
-        {
-            canConnect = false,
-            error = ex.Message
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                ValidAudience = builder.Configuration["Jwt:Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+                ClockSkew = TimeSpan.FromMinutes(2)
+            };
         });
+
+    //ML Flask
+    builder.Services.AddHttpClient<IBinPredictionService, BinPredictionService>(client =>
+    {
+        client.BaseAddress = new Uri("https://in5nite-ml-fdcycfe6gkfnhdg2.southeastasia-01.azurewebsites.net");
+    });
+
+    // Any endpoint without [AllowAnonymous] is protected
+    builder.Services.AddAuthorization(options =>
+    {
+        options.FallbackPolicy = new AuthorizationPolicyBuilder()
+            .RequireAuthenticatedUser()
+            .Build();
+    });
+
+    builder.Services.AddRateLimiter(options =>
+    {
+        options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+        options.AddPolicy("mobile", context =>
+        {
+            var userId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var partitionKey = !string.IsNullOrWhiteSpace(userId)
+                ? $"user:{userId}"
+                : $"ip:{context.Connection.RemoteIpAddress}";
+
+            return RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: partitionKey,
+                factory: _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 60,
+                    Window = TimeSpan.FromMinutes(1),
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                    QueueLimit = 0
+                });
+        });
+    });
+
+    // CORS policy for Android mobile app
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowAndroid", policy =>
+        {
+            policy
+                .WithOrigins("http://10.0.2.2")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+    });
+
+    var app = builder.Build();
+
+    if (!app.Environment.IsDevelopment())
+    {
+        var forwardOptions = new ForwardedHeadersOptions
+        {
+            ForwardedHeaders = ForwardedHeaders.XForwardedFor |
+                            ForwardedHeaders.XForwardedProto
+        };
+
+        // Allow Azure proxy
+        forwardOptions.KnownNetworks.Clear();
+        forwardOptions.KnownProxies.Clear();
+
+        app.UseForwardedHeaders(forwardOptions);
     }
-});
 
-app.MapGet("/emp-test", async (In5niteDbContext db) =>
-{
-    var count = await db.Employees.CountAsync();
-    return Results.Ok(new { employeeCount = count });
-});
+    if (!app.Environment.IsDevelopment())
+    {
+        app.UseExceptionHandler("/Home/Error");
+        app.UseHsts();
+    }
+
+    app.Use(async (context, next) =>
+    {
+        context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+        context.Response.Headers["X-Frame-Options"] = "DENY";
+        context.Response.Headers["Referrer-Policy"] = "no-referrer";
+        context.Response.Headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()";
+        
+        // Add CSP to allow maps and images
+        context.Response.Headers["Content-Security-Policy"] = 
+            "default-src 'self'; " +
+            "img-src 'self' https: data: blob:; " +  // Allow HTTPS images
+            "script-src 'self' 'unsafe-inline' https://unpkg.com; " +
+            "style-src 'self' 'unsafe-inline' https://unpkg.com; " +
+            "connect-src 'self' https:;";
+
+        await next();
+    });
+
+    app.MapGet("/health", async (In5niteDbContext db) =>
+    {
+        try
+        {
+            var canConnect = await db.Database.CanConnectAsync();
+            return Results.Ok(new { canConnect });
+        }
+        catch (Exception ex)
+        {
+            return Results.Ok(new
+            {
+                canConnect = false,
+                error = ex.Message
+            });
+        }
+    });
+
+    app.MapGet("/emp-test", async (In5niteDbContext db) =>
+    {
+        var count = await db.Employees.CountAsync();
+        return Results.Ok(new { employeeCount = count });
+    });
 
 
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseRouting();
-app.UseCors("AllowAndroid");
-app.UseSession();
-app.UseRateLimiter();
-app.UseAuthentication();
-app.UseAuthorization();
+    app.UseHttpsRedirection();
+    app.UseStaticFiles();
+    app.UseRouting();
+    app.UseCors("AllowAndroid");
+    app.UseSession();
+    app.UseRateLimiter();
+    app.UseAuthentication();
+    app.UseAuthorization();
 
-app.MapControllers();
+    app.MapControllers();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=EmpAuth}/{action=login}/{id?}");
+    app.MapControllerRoute(
+        name: "default",
+        pattern: "{controller=EmpAuth}/{action=login}/{id?}");
 
 
-#pragma warning disable S6966 // Await RunAsync instead
-app.Run();
-#pragma warning restore S6966
+    #pragma warning disable S6966 // Await RunAsync instead
+    app.Run();
+    #pragma warning restore S6966
 
-// Expose Program for integration tests (e.g., WebApplicationFactory<Program>).
-// namespace ADWebApplication
-// {
-//     public partial class Program { }
-// }
+    // Expose Program for integration tests (e.g., WebApplicationFactory<Program>).
+    // namespace ADWebApplication
+    // {
+    //     public partial class Program { }
+    // }
