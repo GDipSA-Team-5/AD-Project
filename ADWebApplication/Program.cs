@@ -206,12 +206,10 @@
         app.UseHsts();
     }
 
-  // Security Headers config For Azure Cloud
+    // Security Headers config For Azure Cloud
     app.Use(async (context, next) =>
     {
-        await next(); // Execute the rest of the pipeline first
-
-        // Overwrite and sset headers after everything else
+        // Set security headers BEFORE next()
         context.Response.Headers["X-Content-Type-Options"] = "nosniff";
         context.Response.Headers["X-Frame-Options"] = "DENY";
         context.Response.Headers["Referrer-Policy"] = "no-referrer";
@@ -222,12 +220,25 @@
         context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
 
         // CSP for images, scripts, styles, connections
-        context.Response.Headers["Content-Security-Policy"] = 
+        context.Response.Headers["Content-Security-Policy"] =
             "default-src 'self'; " +
             "img-src 'self' https: data: blob:; " +
             "script-src 'self' 'unsafe-inline' https://unpkg.com; " +
             "style-src 'self' 'unsafe-inline' https://unpkg.com; " +
             "connect-src 'self' https:;";
+
+        // Execute the rest of the pipeline
+        await next();
+    });
+
+    // Static Files Header Override
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        OnPrepareResponse = ctx =>
+        {
+            ctx.Context.Response.Headers["Cross-Origin-Embedder-Policy"] = "unsafe-none";
+            ctx.Context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
+        }
     });
 
     app.MapGet("/health", async (In5niteDbContext db) =>
