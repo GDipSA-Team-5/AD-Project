@@ -185,6 +185,18 @@
 
     var app = builder.Build();
 
+    // Bypass CSP
+    app.Use(async (context, next) =>
+    {
+        context.Response.OnStarting(() =>
+        {
+            context.Response.Headers.Remove("Content-Security-Policy");
+            return Task.CompletedTask;
+        });
+
+        await next();
+    });
+
     if (!app.Environment.IsDevelopment())
     {
         var forwardOptions = new ForwardedHeadersOptions
