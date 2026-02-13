@@ -143,7 +143,7 @@ namespace ADWebApplication.Tests.Services
         [Fact]
         public async Task DeleteCampaignAsync_WithActiveCampaign_Throws()
         {
-            var repo = new FakeCampaignRepositoryWithData(new Campaign { CampaignId = 1, Status = "Active" });
+            var repo = new FakeCampaignRepositoryWithData(new Campaign { CampaignId = 1, Status = "ACTIVE" });
             var svc = new CampaignService(repo, NullLogger<CampaignService>.Instance);
 
             await Assert.ThrowsAsync<InvalidOperationException>(() => svc.DeleteCampaignAsync(1));
@@ -163,7 +163,7 @@ namespace ADWebApplication.Tests.Services
         [Fact]
         public async Task DeleteCampaignAsync_WithInactiveCampaign_ReturnsTrue()
         {
-            var repo = new FakeCampaignRepositoryWithData(new Campaign { CampaignId = 1, Status = "Inactive" });
+            var repo = new FakeCampaignRepositoryWithData(new Campaign { CampaignId = 1, Status = "INACTIVE" });
             var svc = new CampaignService(repo, NullLogger<CampaignService>.Instance);
 
             var result = await svc.DeleteCampaignAsync(1);
@@ -228,7 +228,7 @@ namespace ADWebApplication.Tests.Services
         [Fact]
         public async Task ActivateCampaignAsync_WithinDateRange_ReturnsTrue()
         {
-            var campaign = new Campaign { CampaignId = 1, StartDate = DateTime.UtcNow.AddDays(-1), EndDate = DateTime.UtcNow.AddDays(1), Status = "Planned" };
+            var campaign = new Campaign { CampaignId = 1, StartDate = DateTime.UtcNow.AddDays(-1), EndDate = DateTime.UtcNow.AddDays(1), Status = "SCHEDULED" };
             var repo = new FakeCampaignRepositoryWithData(campaign);
             var svc = new CampaignService(repo, NullLogger<CampaignService>.Instance);
 
