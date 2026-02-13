@@ -206,24 +206,28 @@
         app.UseHsts();
     }
 
+  // Security Headers config For Azure Cloud
     app.Use(async (context, next) =>
     {
+        await next(); // Execute the rest of the pipeline first
+
+        // Overwrite and sset headers after everything else
         context.Response.Headers["X-Content-Type-Options"] = "nosniff";
         context.Response.Headers["X-Frame-Options"] = "DENY";
         context.Response.Headers["Referrer-Policy"] = "no-referrer";
         context.Response.Headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()";
+
+        // Force COEP/COOP override
         context.Response.Headers["Cross-Origin-Embedder-Policy"] = "unsafe-none";
         context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
-        
-        // Add CSP to allow maps and images
+
+        // CSP for images, scripts, styles, connections
         context.Response.Headers["Content-Security-Policy"] = 
             "default-src 'self'; " +
-            "img-src 'self' https: data: blob:; " +  // Allow HTTPS images
+            "img-src 'self' https: data: blob:; " +
             "script-src 'self' 'unsafe-inline' https://unpkg.com; " +
             "style-src 'self' 'unsafe-inline' https://unpkg.com; " +
             "connect-src 'self' https:;";
-
-        await next();
     });
 
     app.MapGet("/health", async (In5niteDbContext db) =>
