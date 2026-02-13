@@ -67,7 +67,7 @@ namespace ADWebApplication.Tests.Services
 
             id.Should().Be(123);
             repo.LastSaved.Should().NotBeNull();
-            repo.LastSaved!.Status.Should().Be("Planned");
+            repo.LastSaved!.Status.Should().Be("SCHEDULED");
         }
 
         [Fact]
@@ -91,7 +91,7 @@ namespace ADWebApplication.Tests.Services
             await svc.AddCampaignAsync(campaign);
 
             repo.LastSaved.Should().NotBeNull();
-            repo.LastSaved!.Status.Should().Be("Completed");
+            repo.LastSaved!.Status.Should().Be("EXPIRED");
         }
 
         [Fact]
@@ -124,7 +124,7 @@ namespace ADWebApplication.Tests.Services
             var result = await svc.UpdateCampaignAsync(campaign);
 
             result.Should().BeTrue();
-            repo.LastSaved!.Status.Should().Be("Planned");
+            repo.LastSaved!.Status.Should().Be("SCHEDULED");
         }
 
         [Fact]
@@ -137,7 +137,7 @@ namespace ADWebApplication.Tests.Services
             var result = await svc.UpdateCampaignAsync(campaign);
 
             result.Should().BeTrue();
-            repo.LastSaved!.Status.Should().Be("Completed");
+            repo.LastSaved!.Status.Should().Be("EXPIRED");
         }
 
         [Fact]
