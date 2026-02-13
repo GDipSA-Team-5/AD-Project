@@ -212,6 +212,8 @@
         context.Response.Headers["X-Frame-Options"] = "DENY";
         context.Response.Headers["Referrer-Policy"] = "no-referrer";
         context.Response.Headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()";
+        context.Response.Headers["Cross-Origin-Embedder-Policy"] = "unsafe-none";
+        context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
         
         // Add CSP to allow maps and images
         context.Response.Headers["Content-Security-Policy"] = 
