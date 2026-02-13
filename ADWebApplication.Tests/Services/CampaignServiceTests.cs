@@ -143,7 +143,7 @@ namespace ADWebApplication.Tests.Services
         [Fact]
         public async Task DeleteCampaignAsync_WithActiveCampaign_Throws()
         {
-            var repo = new FakeCampaignRepositoryWithData(new Campaign { CampaignId = 1, Status = "Active" });
+            var repo = new FakeCampaignRepositoryWithData(new Campaign { CampaignId = 1, Status = "ACTIVE" });
             var svc = new CampaignService(repo, NullLogger<CampaignService>.Instance);
 
             await Assert.ThrowsAsync<InvalidOperationException>(() => svc.DeleteCampaignAsync(1));

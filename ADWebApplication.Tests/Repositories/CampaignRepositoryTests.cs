@@ -325,46 +325,23 @@ namespace ADWebApplication.Tests.Repositories
         [Fact]
         public async Task GetScheduledCampaignsAsync_ShouldReturnOnlyScheduledCampaigns()
         {
-            // Arrange
             var context = GetInMemoryDbContext();
             context.Campaigns.AddRange(
-                new Campaign 
-                { 
-                    CampaignId = 1, 
-                    CampaignName = "Scheduled Campaign 1", 
-                    StartDate = DateTime.Today.AddDays(5),
-                    EndDate = DateTime.Today.AddDays(15),
-                    Status = "Planned"
-                },
-                new Campaign 
-                { 
-                    CampaignId = 2, 
-                    CampaignName = "Scheduled Campaign 2", 
-                    StartDate = DateTime.Today.AddDays(10),
-                    EndDate = DateTime.Today.AddDays(20),
-                    Status = "Planned"
-                },
-                new Campaign 
-                { 
-                    CampaignId = 3, 
-                    CampaignName = "Active Campaign", 
-                    StartDate = DateTime.Today.AddDays(-5),
-                    EndDate = DateTime.Today.AddDays(5),
-                    Status = "Active"
-                }
+                new Campaign { CampaignId = 1, CampaignName = "Campaign 1", StartDate = DateTime.Today.AddDays(5), EndDate = DateTime.Today.AddDays(15), Status = "Scheduled" },
+                new Campaign { CampaignId = 2, CampaignName = "Campaign 2", StartDate = DateTime.Today.AddDays(10), EndDate = DateTime.Today.AddDays(20), Status = "Scheduled" },
+                new Campaign { CampaignId = 3, CampaignName = "Active Campaign", StartDate = DateTime.Today.AddDays(-5), EndDate = DateTime.Today.AddDays(5), Status = "ACTIVE" }
             );
             await context.SaveChangesAsync();
 
             var repository = new CampaignRepository(context);
 
-            // Act
             var result = await repository.GetScheduledCampaignsAsync();
 
-            // Assert
             result.Should().HaveCount(2);
-            result.Should().AllSatisfy(c => c.Status.Should().Be("Planned"));
+            result.Should().AllSatisfy(c => c.Status.Should().Be("Scheduled"));
             result.Should().BeInAscendingOrder(c => c.StartDate);
         }
+
 
         #endregion
 
