@@ -206,6 +206,8 @@
         app.UseHsts();
     }
 
+    
+    app.UseHttpsRedirection();
     // Security Headers config For Azure Cloud
     app.Use(async (context, next) =>
     {
@@ -268,9 +270,6 @@
         return Results.Ok(new { employeeCount = count });
     });
 
-
-    app.UseHttpsRedirection();
-    app.UseStaticFiles();
     app.UseRouting();
     app.UseCors("AllowAndroid");
     app.UseSession();
