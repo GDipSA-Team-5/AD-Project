@@ -224,14 +224,12 @@
         "default-src 'self'; " +
         "img-src 'self' https: data: blob:; " +
         "connect-src 'self' https:; " +
-        "script-src 'self' 'unsafe-inline' https://unpkg.com; " +
-        "style-src 'self' 'unsafe-inline' https://unpkg.com; " +
-        "style-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com; " +
-        "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com;" +
-        "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; " +
-        "style-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; " +
-        "font-src https: data:; " +
-        "connect-src 'self' https:;";
+        "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net https://unpkg.com/leaflet/ https://cdnjs.cloudflare.com; " +
+        "script-src-elem 'self' https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " +
+        "style-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " +
+        "style-src-elem 'self' https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " +
+        "font-src 'self' https://cdn.jsdelivr.net data:; " +
+        "connect-src 'self' https:; ";
 
         // Execute the rest of the pipeline
         await next();
