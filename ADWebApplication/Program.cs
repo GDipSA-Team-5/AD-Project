@@ -221,11 +221,15 @@
 
         // CSP for images, scripts, styles, connections
         context.Response.Headers["Content-Security-Policy"] =
-            "default-src 'self'; " +
-            "img-src 'self' https: data: blob:; " +
-            "script-src 'self' 'unsafe-inline' https://unpkg.com; " +
-            "style-src 'self' 'unsafe-inline' https://unpkg.com; " +
-            "connect-src 'self' https:;";
+        "default-src 'self'; " +
+        "img-src 'self' https: data: blob:; " +
+        "connect-src 'self' https:; " +
+        "script-src 'self' 'unsafe-inline' https://unpkg.com; " +
+        "style-src 'self' 'unsafe-inline' https://unpkg.com; " +
+        "style-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com; " +
+        "script-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com;" +
+        "font-src https: data:; " +
+        "connect-src 'self' https:;";
 
         // Execute the rest of the pipeline
         await next();
