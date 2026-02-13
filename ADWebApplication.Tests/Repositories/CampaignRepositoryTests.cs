@@ -326,10 +326,32 @@ namespace ADWebApplication.Tests.Repositories
         public async Task GetScheduledCampaignsAsync_ShouldReturnOnlyScheduledCampaigns()
         {
             var context = GetInMemoryDbContext();
+            var now = DateTime.UtcNow;
             context.Campaigns.AddRange(
-                new Campaign { CampaignId = 1, CampaignName = "Campaign 1", StartDate = DateTime.Today.AddDays(5), EndDate = DateTime.Today.AddDays(15), Status = "Scheduled" },
-                new Campaign { CampaignId = 2, CampaignName = "Campaign 2", StartDate = DateTime.Today.AddDays(10), EndDate = DateTime.Today.AddDays(20), Status = "Scheduled" },
-                new Campaign { CampaignId = 3, CampaignName = "Active Campaign", StartDate = DateTime.Today.AddDays(-5), EndDate = DateTime.Today.AddDays(5), Status = "ACTIVE" }
+                new Campaign 
+                { 
+                    CampaignId = 1, 
+                    CampaignName = "Scheduled Campaign 1", 
+                    StartDate = now.AddDays(5),
+                    EndDate = now.AddDays(15),
+                    Status = "SCHEDULED"
+                },
+                new Campaign 
+                { 
+                    CampaignId = 2, 
+                    CampaignName = "Scheduled Campaign 2", 
+                    StartDate = now.AddDays(10),
+                    EndDate = now.AddDays(20),
+                    Status = "SCHEDULED"
+                },
+                new Campaign 
+                { 
+                    CampaignId = 3, 
+                    CampaignName = "Active Campaign", 
+                    StartDate = now.AddDays(-5),
+                    EndDate = now.AddDays(5),
+                    Status = "ACTIVE"
+                }
             );
             await context.SaveChangesAsync();
 
@@ -338,7 +360,7 @@ namespace ADWebApplication.Tests.Repositories
             var result = await repository.GetScheduledCampaignsAsync();
 
             result.Should().HaveCount(2);
-            result.Should().AllSatisfy(c => c.Status.Should().Be("Scheduled"));
+            result.Should().AllSatisfy(c => c.Status.Should().Be("SCHEDULED"));
             result.Should().BeInAscendingOrder(c => c.StartDate);
         }
 
@@ -359,7 +381,7 @@ namespace ADWebApplication.Tests.Repositories
                     CampaignName = "Completed 1", 
                     StartDate = DateTime.Today.AddDays(-30),
                     EndDate = DateTime.Today.AddDays(-20),
-                    Status = "Completed"
+                    Status = "INACTIVE"
                 },
                 new Campaign 
                 { 
@@ -367,7 +389,7 @@ namespace ADWebApplication.Tests.Repositories
                     CampaignName = "Completed 2", 
                     StartDate = DateTime.Today.AddDays(-40),
                     EndDate = DateTime.Today.AddDays(-30),
-                    Status = "Completed"
+                    Status = "INACTIVE"
                 },
                 new Campaign 
                 { 
@@ -375,7 +397,7 @@ namespace ADWebApplication.Tests.Repositories
                     CampaignName = "Active", 
                     StartDate = DateTime.Today,
                     EndDate = DateTime.Today.AddDays(10),
-                    Status = "Active"
+                    Status = "ACTIVE"
                 }
             );
             await context.SaveChangesAsync();
@@ -383,11 +405,11 @@ namespace ADWebApplication.Tests.Repositories
             var repository = new CampaignRepository(context);
 
             // Act
-            var result = await repository.GetByStatusAsync("Completed");
+            var result = await repository.GetByStatusAsync("INACTIVE");
 
             // Assert
             result.Should().HaveCount(2);
-            result.Should().AllSatisfy(c => c.Status.Should().Be("Completed"));
+            result.Should().AllSatisfy(c => c.Status.Should().Be("INACTIVE"));
             result.Should().BeInDescendingOrder(c => c.StartDate);
         }
 
@@ -402,14 +424,14 @@ namespace ADWebApplication.Tests.Repositories
                 CampaignName = "Active Campaign", 
                 StartDate = DateTime.Today,
                 EndDate = DateTime.Today.AddDays(10),
-                Status = "Active"
+                Status = "ACTIVE"
             });
             await context.SaveChangesAsync();
 
             var repository = new CampaignRepository(context);
 
             // Act
-            var result = await repository.GetByStatusAsync("Cancelled");
+            var result = await repository.GetByStatusAsync("CANCELLED");
 
             // Assert
             result.Should().BeEmpty();
@@ -432,7 +454,7 @@ namespace ADWebApplication.Tests.Repositories
                     CampaignName = "Current Campaign", 
                     StartDate = today.AddDays(-5),
                     EndDate = today.AddDays(5),
-                    Status = "Active"
+                    Status = "ACTIVE"
                 },
                 new Campaign 
                 { 
@@ -440,7 +462,7 @@ namespace ADWebApplication.Tests.Repositories
                     CampaignName = "Past Campaign", 
                     StartDate = today.AddDays(-30),
                     EndDate = today.AddDays(-20),
-                    Status = "Completed"
+                    Status = "INACTIVE"
                 },
                 new Campaign 
                 { 
@@ -448,7 +470,7 @@ namespace ADWebApplication.Tests.Repositories
                     CampaignName = "Future Campaign", 
                     StartDate = today.AddDays(10),
                     EndDate = today.AddDays(20),
-                    Status = "Scheduled"
+                    Status = "SCHEDULED"
                 }
             );
             await context.SaveChangesAsync();
@@ -476,7 +498,7 @@ namespace ADWebApplication.Tests.Repositories
                 CampaignName = "Future Campaign", 
                 StartDate = today.AddDays(10),
                 EndDate = today.AddDays(20),
-                Status = "Scheduled"
+                Status = "SCHEDULED"
             });
             await context.SaveChangesAsync();
 
@@ -502,7 +524,7 @@ namespace ADWebApplication.Tests.Repositories
                     CampaignName = "Older Active Campaign", 
                     StartDate = today.AddDays(-10),
                     EndDate = today.AddDays(5),
-                    Status = "Active"
+                    Status = "ACTIVE"
                 },
                 new Campaign 
                 { 
@@ -510,7 +532,7 @@ namespace ADWebApplication.Tests.Repositories
                     CampaignName = "Newer Active Campaign", 
                     StartDate = today.AddDays(-3),
                     EndDate = today.AddDays(7),
-                    Status = "Active"
+                    Status = "ACTIVE"
                 }
             );
             await context.SaveChangesAsync();
