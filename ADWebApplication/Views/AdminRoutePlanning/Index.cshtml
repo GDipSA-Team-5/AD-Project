@@ -276,12 +276,17 @@ else
         }
         document.addEventListener("DOMContentLoaded", function () {
             // 1. Initialize Map with a CLEAN style (CartoDB Positron)
+
             var map = L.map('routeMap', { zoomControl: false }).setView([1.3521, 103.8198], 12);
             L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                attribution: '©OpenStreetMap'
+            /* crossOrigin = TRUE, allow map api on cloud */
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                crossOrigin: true,
+                maxZoom: 19,
+                attribution: "© OpenStreetMap contributors"
             }).addTo(map);
+
 
             var rawStops = @Html.Raw(Json.Serialize(Model.AllStops));
             const getV = (o, k) => o[k.charAt(0).toLowerCase() + k.slice(1)] ?? o[k];
