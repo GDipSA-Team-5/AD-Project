@@ -32,6 +32,10 @@ Technology Stack
 	- Security Scanning: SAST (SonarCloud), SCA (OWASP Dependency Checker), DAST (OWASP ZAP)
 
 Web Application: https://in5nite-e8d9b0g5cad9hrbg.southeastasia-01.azurewebsites.net/
+⸻
+## Local Setup & Secrets Configuration
+
+To configure local secrets securely, please refer to: Team 5 Project Report – Local Development Setup Section 1.2
 
 ## AI Tool Declaration
 
