@@ -221,7 +221,7 @@
     
     app.UseHttpsRedirection();
     // Security Headers config For Azure Cloud
-    app.Use(async (context, next) =>
+    /*app.Use(async (context, next) =>
     {
         // Set security headers BEFORE next()
         context.Response.Headers["X-Content-Type-Options"] = "nosniff";
@@ -243,7 +243,7 @@
 
         // Execute the rest of the pipeline
         await next();
-    });
+    });*/
 
     // Static Files Header Override
     app.UseStaticFiles(new StaticFileOptions
