@@ -220,30 +220,6 @@
 
     
     app.UseHttpsRedirection();
-    // Security Headers config For Azure Cloud
-    /*app.Use(async (context, next) =>
-    {
-        // Set security headers BEFORE next()
-        context.Response.Headers["X-Content-Type-Options"] = "nosniff";
-        context.Response.Headers["X-Frame-Options"] = "DENY";
-        context.Response.Headers["Referrer-Policy"] = "no-referrer";
-        context.Response.Headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()";
-
-        // Force COEP/COOP override
-        context.Response.Headers["Cross-Origin-Embedder-Policy"] = "unsafe-none";
-        context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
-
-        // CSP for images, scripts, styles, connections
-        context.Response.Headers["Content-Security-Policy"] =
-        "default-src * 'unsafe-inline' 'unsafe-eval'; " +
-        "style-src * 'unsafe-inline'; " +
-        "script-src * 'unsafe-inline' 'unsafe-eval'; " +
-        "img-src * data: blob:;";
-
-
-        // Execute the rest of the pipeline
-        await next();
-    });*/
 
     // Static Files Header Override
     app.UseStaticFiles(new StaticFileOptions
