@@ -214,6 +214,7 @@
 
     if (!app.Environment.IsDevelopment())
     {
+        app.UseHttpsRedirection();
         app.UseExceptionHandler("/Home/Error");
         app.UseHsts();
     }
@@ -246,7 +247,7 @@
                 error = ex.Message
             });
         }
-    });
+    }).AllowAnonymous();
 
     app.MapGet("/emp-test", async (In5niteDbContext db) =>
     {
